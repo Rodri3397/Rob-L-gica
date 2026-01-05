@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IA de Cores (N-gram/Markov) — N=5</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 16px; background: #0b0f14; color: #e8eef6; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .card {
+      background: #111826; border: 1px solid #1c2a3b; border-radius: 14px;
+      padding: 14px; margin: 12px 0; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+    }
+    h1 { font-size: 18px; margin: 0 0 8px; }
+    h2 { font-size: 14px; margin: 0 0 10px; color: #b9c7d9; font-weight: 600; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    button {
+      border: 1px solid #2a3f58; background: #162235; color: #e8eef6;
+      padding: 12px 14px; border-radius: 12px; font-weight: 700; cursor: pointer;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    .btnA { border-color: #2b6fff; }
+    .btnV { border-color: #ff3b3b; }
+    .btnE { border-color: #ffd000; }
+    .muted { color: #9fb0c6; font-size: 12px; }
+    .big { font-size: 16px; font-weight: 800; }
+    .pill {
+      display: inline-block; padding: 3px 8px; border-radius: 999px;
+      border: 1px solid #2a3f58; background: #0f1725; font-size: 12px; color: #cfe0f5;
+    }
+    .kpi { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 780px) { .kpi { grid-template-columns: 1fr 1fr; } }
+    .box { background: #0f1725; border: 1px solid #1c2a3b; border-radius: 12px; padding: 10px; }
+    textarea {
+      width: 100%; min-height: 92px; resize: vertical;
+      background: #0f1725; color: #e8eef6; border: 1px solid #1c2a3b; border-radius: 12px;
+      padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+    }
+    input[type="number"]{
+      width: 90px; padding: 10px; border-radius: 10px;
+      background: #0f1725; color: #e8eef6; border: 1px solid #1c2a3b;
+    }
+    .danger { border-color: #ff3b3b !important; }
+    .ok { border-color: #2bd46a !important; }
+    .smallbtn { padding: 10px 12px; font-weight: 700; }
+    .sep { height: 1px; background: #1c2a3b; margin: 12px 0; }
+    a { color: #8ab4ff; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>IA de Cores (Markov / n-gram)</h1>
+    <div class="muted">
+      Registre cada rodada com 1 toque. O modelo aprende padrões do tipo:
+      “últimas N cores” → “próxima cor”. Padrão: <b>N=5</b>.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Registrar resultado</h2>
+    <div class="row">
+      <button class="btnA" id="btnA">Azul (A)</button>
+      <button class="btnV" id="btnV">Vermelho (V)</button>
+      <button class="btnE" id="btnE">Empate (E)</button>
+      <span class="pill" id="statusPill">Aguardando dados…</span>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="kpi">
+      <div class="box">
+        <div class="muted">Contexto (últimas <span id="nShow">5</span> cores)</div>
+        <div class="big" id="ctxText">—</div>
+        <div class="muted">Este contexto já apareceu: <b><span id="ctxSeen">0</span>x</b></div>
+      </div>
+
+      <div class="box">
+        <div class="muted">Previsão</div>
+        <div class="big" id="predText">—</div>
+        <div class="muted" id="probaText">A: — | V: — | E: —</div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <div class="row">
+      <label class="muted">N (tamanho do padrão):</label>
+      <input type="number" id="nInput" min="1" max="30" value="5" />
+      <button class="smallbtn ok" id="applyN">Aplicar N</button>
+      <span class="muted">Dica: com poucos dados, N=3–5 costuma ser melhor.</span>
+    </div>
+
+    <div class="row" style="margin-top:10px;">
+      <button class="smallbtn" id="undoBtn">Desfazer último</button>
+      <button class="smallbtn" id="exportBtn">Exportar CSV</button>
+      <button class="smallbtn danger" id="resetBtn">Reset (zera tudo)</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Histórico</h2>
+    <div class="muted">Sequência registrada (A/V/E):</div>
+    <textarea id="historyBox" readonly></textarea>
+    <div class="muted" id="countText">Total: 0</div>
+  </div>
+
+  <div class="card">
+    <h2>Importar sequência</h2>
+    <div class="muted">
+      Cole uma sequência como: <code>V,V,A,E,V,A</code> ou <code>V V A E V A</code>.
+      Isso treina o modelo de uma vez.
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <textarea id="importBox" placeholder="Cole aqui..."></textarea>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <button class="smallbtn ok" id="importBtn">Importar e Treinar</button>
+      <button class="smallbtn" id="clearImportBtn">Limpar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="muted">
+      Armazenamento: os dados ficam salvos no seu navegador (local). Se abrir em outro aparelho/navegador, começa vazio.
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const CORES = ["A","V","E"];
+  let alpha = 1.0; // suavização Laplace
+  let N = 5;
+
+  // Modelo: counts[contextKey] = {A:count, V:count, E:count}
+  let counts = {};
+  let seq = [];
+
+  // Para desfazer com segurança, reconstruímos o modelo a partir do histórico quando preciso.
+  function rebuildModel() {
+    counts = {};
+    for (let i = 0; i + N < seq.length; i++) {
+      const ctx = seq.slice(i, i + N);
+      const nxt = seq[i + N];
+      updateCounts(ctx, nxt);
+    }
+  }
+
+  function ctxKey(ctxArr) { return ctxArr.join(","); }
+
+  function updateCounts(ctxArr, nxt) {
+    const key = ctxKey(ctxArr);
+    if (!counts[key]) counts[key] = {A:0, V:0, E:0};
+    counts[key][nxt] = (counts[key][nxt] || 0) + 1;
+  }
+
+  function predictProba(ctxArr) {
+    const key = ctxKey(ctxArr);
+    const c = counts[key] || {A:0, V:0, E:0};
+    const total = (c.A||0) + (c.V||0) + (c.E||0);
+    const denom = total + alpha * CORES.length;
+    const probs = {
+      A: ((c.A||0) + alpha) / denom,
+      V: ((c.V||0) + alpha) / denom,
+      E: ((c.E||0) + alpha) / denom,
+    };
+    return { probs, total };
+  }
+
+  function bestColor(probs) {
+    let best = "A";
+    let bestVal = -1;
+    for (const k of CORES) {
+      if (probs[k] > bestVal) { bestVal = probs[k]; best = k; }
+    }
+    return best;
+  }
+
+  function label(c) {
+    if (c === "A") return "Azul (A)";
+    if (c === "V") return "Vermelho (V)";
+    return "Empate (E)";
+  }
+
+  function formatPct(x) { return (x * 100).toFixed(1) + "%"; }
+
+  function save() {
+    const payload = { N, alpha, seq, counts };
+    localStorage.setItem("IA_CORES_V1", JSON.stringify(payload));
+  }
+
+  function load() {
+    const raw = localStorage.getItem("IA_CORES_V1");
+    if (!raw) return;
+    try {
+      const payload = JSON.parse(raw);
+      if (payload && payload.seq && typeof payload.N === "number") {
+        N = payload.N;
+        alpha = typeof payload.alpha === "number" ? payload.alpha : 1.0;
+        seq = Array.isArray(payload.seq) ? payload.seq : [];
+        // counts pode ficar inconsistente se N mudar; então sempre reconstruímos.
+        rebuildModel();
+      }
+    } catch (_) {}
+  }
+
+  // UI
+  const btnA = document.getElementById("btnA");
+  const btnV = document.getElementById("btnV");
+  const btnE = document.getElementById("btnE");
+  const statusPill = document.getElementById("statusPill");
+  const ctxText = document.getElementById("ctxText");
+  const ctxSeen = document.getElementById("ctxSeen");
+  const predText = document.getElementById("predText");
+  const probaText = document.getElementById("probaText");
+  const historyBox = document.getElementById("historyBox");
+  const countText = document.getElementById("countText");
+  const nShow = document.getElementById("nShow");
+  const nInput = document.getElementById("nInput");
+  const applyN = document.getElementById("applyN");
+  const undoBtn = document.getElementById("undoBtn");
+  const exportBtn = document.getElementById("exportBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const importBox = document.getElementById("importBox");
+  const importBtn = document.getElementById("importBtn");
+  const clearImportBtn = document.getElementById("clearImportBtn");
+
+  function updateUI() {
+    nShow.textContent = String(N);
+    nInput.value = String(N);
+
+    historyBox.value = seq.join(" ");
+    countText.textContent = `Total: ${seq.length}`;
+
+    if (seq.length < N) {
+      statusPill.textContent = `Preciso de mais ${N - seq.length} resultado(s) para começar a prever`;
+      ctxText.textContent = "—";
+      ctxSeen.textContent = "0";
+      predText.textContent = "—";
+      probaText.textContent = "A: — | V: — | E: —";
+      return;
+    }
+
+    const ctx = seq.slice(seq.length - N);
+    ctxText.textContent = ctx.join(" ");
+    const { probs, total } = predictProba(ctx);
+    ctxSeen.textContent = String(total);
+
+    const best = bestColor(probs);
+    predText.textContent = `${label(best)}`;
+    probaText.textContent = `A: ${formatPct(probs.A)} | V: ${formatPct(probs.V)} | E: ${formatPct(probs.E)}`;
+
+    // status curto
+    statusPill.textContent = total === 0
+      ? "Contexto novo (pouca confiança ainda)"
+      : (total < 5 ? "Poucos exemplos desse contexto" : "Contexto já aprendido");
+  }
+
+  function addResult(cor) {
+    if (!CORES.includes(cor)) return;
+    // aprende: se já existe contexto completo, atualiza contagem com o próximo
+    if (seq.length >= N) {
+      const ctx = seq.slice(seq.length - N);
+      updateCounts(ctx, cor);
+    }
+    seq.push(cor);
+    save();
+    updateUI();
+  }
+
+  btnA.addEventListener("click", () => addResult("A"));
+  btnV.addEventListener("click", () => addResult("V"));
+  btnE.addEventListener("click", () => addResult("E"));
+
+  applyN.addEventListener("click", () => {
+    const val = parseInt(nInput.value, 10);
+    if (!Number.isFinite(val) || val < 1 || val > 30) {
+      alert("N precisa estar entre 1 e 30.");
+      return;
+    }
+    N = val;
+    // ao mudar N, precisamos reconstruir o modelo
+    rebuildModel();
+    save();
+    updateUI();
+  });
+
+  undoBtn.addEventListener("click", () => {
+    if (seq.length === 0) return;
+    seq.pop();
+    rebuildModel();
+    save();
+    updateUI();
+  });
+
+  resetBtn.addEventListener("click", () => {
+    const ok = confirm("Isso vai apagar histórico e aprendizado. Confirmar?");
+    if (!ok) return;
+    seq = [];
+    counts = {};
+    save();
+    updateUI();
+  });
+
+  function download(filename, text) {
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  exportBtn.addEventListener("click", () => {
+    // CSV: index,cor
+    let csv = "index,cor\n";
+    for (let i = 0; i < seq.length; i++) csv += `${i+1},${seq[i]}\n`;
+    download("sequencia_cores.csv", csv);
+  });
+
+  function parseSeq(text) {
+    // aceita separadores vírgula/espaco/linha
+    const raw = text.toUpperCase().replace(/[^AVE,\s]/g, " ");
+    const tokens = raw.split(/[\s,]+/).map(t => t.trim()).filter(Boolean);
+    const filtered = tokens.filter(t => CORES.includes(t));
+    return filtered;
+  }
+
+  importBtn.addEventListener("click", () => {
+    const s = importBox.value || "";
+    const parsed = parseSeq(s);
+    if (parsed.length === 0) {
+      alert("Não encontrei A/V/E no que você colou.");
+      return;
+    }
+    // adiciona tudo (treina incrementalmente)
+    for (const c of parsed) addResult(c);
+    importBox.value = "";
+  });
+
+  clearImportBtn.addEventListener("click", () => {
+    importBox.value = "";
+  });
+
+  // init
+  load();
+  updateUI();
+})();
+</script>
+</body>
+</html>
