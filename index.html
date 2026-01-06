@@ -2,357 +2,808 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IA de Cores (N-gram/Markov) — N=5</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>App Educativo — Padrões em Grade (6×N) V/A/E</title>
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    body { margin: 16px; background: #0b0f14; color: #e8eef6; }
-    .wrap { max-width: 980px; margin: 0 auto; }
+    body { margin: 16px; background:#0b0f14; color:#e8eef7; }
+    h1,h2 { margin: 0 0 10px; }
+    .row { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
     .card {
-      background: #111826; border: 1px solid #1c2a3b; border-radius: 14px;
-      padding: 14px; margin: 12px 0; box-shadow: 0 6px 20px rgba(0,0,0,.25);
+      background:#111826; border:1px solid #223049; border-radius:12px;
+      padding:14px; box-shadow: 0 6px 18px rgba(0,0,0,.25);
     }
-    h1 { font-size: 18px; margin: 0 0 8px; }
-    h2 { font-size: 14px; margin: 0 0 10px; color: #b9c7d9; font-weight: 600; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .card h2 { font-size: 16px; color:#cfe0ff; margin-bottom: 10px; }
+    textarea, input, select {
+      width: 100%; box-sizing: border-box; color:#e8eef7; background:#0b1220;
+      border:1px solid #223049; border-radius:10px; padding:10px; outline:none;
+    }
+    textarea { min-height: 120px; resize: vertical; }
     button {
-      border: 1px solid #2a3f58; background: #162235; color: #e8eef6;
-      padding: 12px 14px; border-radius: 12px; font-weight: 700; cursor: pointer;
+      background:#1d4ed8; color:white; border:0; border-radius:10px;
+      padding:10px 12px; cursor:pointer; font-weight:600;
     }
-    button:hover { filter: brightness(1.08); }
-    button:active { transform: translateY(1px); }
-    .btnA { border-color: #2b6fff; }
-    .btnV { border-color: #ff3b3b; }
-    .btnE { border-color: #ffd000; }
-    .muted { color: #9fb0c6; font-size: 12px; }
-    .big { font-size: 16px; font-weight: 800; }
-    .pill {
-      display: inline-block; padding: 3px 8px; border-radius: 999px;
-      border: 1px solid #2a3f58; background: #0f1725; font-size: 12px; color: #cfe0f5;
+    button.secondary { background:#243248; }
+    button.danger { background:#b91c1c; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    .hint { font-size: 12px; color:#a9b7d0; line-height: 1.35; }
+    .gridWrap { overflow:auto; border-radius:12px; border:1px solid #223049; }
+    .grid {
+      display:grid; gap:6px; padding:10px; background:#0b1220;
+      grid-auto-flow: column;
+      grid-auto-columns: 46px;
+      grid-template-rows: repeat(6, 46px);
+      align-items: center;
     }
-    .kpi { display: grid; grid-template-columns: 1fr; gap: 10px; }
-    @media (min-width: 780px) { .kpi { grid-template-columns: 1fr 1fr; } }
-    .box { background: #0f1725; border: 1px solid #1c2a3b; border-radius: 12px; padding: 10px; }
-    textarea {
-      width: 100%; min-height: 92px; resize: vertical;
-      background: #0f1725; color: #e8eef6; border: 1px solid #1c2a3b; border-radius: 12px;
-      padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size: 12px;
+    .cell {
+      width:46px; height:46px; border-radius:10px; border:1px solid #223049;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800; user-select:none;
+      background:#0f172a;
     }
-    input[type="number"]{
-      width: 90px; padding: 10px; border-radius: 10px;
-      background: #0f1725; color: #e8eef6; border: 1px solid #1c2a3b;
+    .V { background:#5b0b14; border-color:#a11b2f; }
+    .A { background:#083a6b; border-color:#1c64b5; }
+    .E { background:#2a2a2a; border-color:#5b5b5b; }
+    .empty { opacity:.35; }
+    .cell small { font-size: 11px; opacity:.9; }
+    table { width:100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #223049; padding:8px; text-align:left; vertical-align: top; }
+    th { color:#cfe0ff; font-weight:700; }
+    .tag {
+      display:inline-block; padding:2px 8px; border-radius:999px;
+      background:#243248; color:#cfe0ff; border:1px solid #334766; font-size:12px;
     }
-    .danger { border-color: #ff3b3b !important; }
-    .ok { border-color: #2bd46a !important; }
-    .smallbtn { padding: 10px 12px; font-weight: 700; }
-    .sep { height: 1px; background: #1c2a3b; margin: 12px 0; }
-    a { color: #8ab4ff; }
+    .ok { background:#0f2f1b; border-color:#1c7c3a; }
+    .no { background:#2f0f0f; border-color:#b91c1c; }
+    .muted { color:#a9b7d0; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .split { display:flex; gap:10px; flex-wrap:wrap; }
+    .split > div { flex: 1 1 240px; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .small { font-size: 12px; }
+    .hr { height:1px; background:#223049; margin: 10px 0; }
   </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1>IA de Cores (Markov / n-gram)</h1>
-    <div class="muted">
-      Registre cada rodada com 1 toque. O modelo aprende padrões do tipo:
-      “últimas N cores” → “próxima cor”. Padrão: <b>N=5</b>.
-    </div>
-  </div>
+  <h1>App Educativo — Padrões no “Caminho de Contas” (6×N) — V/A/E</h1>
+  <p class="hint">
+    Entrada: histórico (até 130) preenchendo de cima para baixo em colunas de 6 linhas.
+    Resultados: V (vermelho), A (azul), E (empate). Relatório técnico: ocorrências, hits/misses e taxa de acerto no histórico.
+  </p>
 
-  <div class="card">
-    <h2>Registrar resultado</h2>
-    <div class="row">
-      <button class="btnA" id="btnA">Azul (A)</button>
-      <button class="btnV" id="btnV">Vermelho (V)</button>
-      <button class="btnE" id="btnE">Empate (E)</button>
-      <span class="pill" id="statusPill">Aguardando dados…</span>
-    </div>
-
-    <div class="sep"></div>
-
-    <div class="kpi">
-      <div class="box">
-        <div class="muted">Contexto (últimas <span id="nShow">5</span> cores)</div>
-        <div class="big" id="ctxText">—</div>
-        <div class="muted">Este contexto já apareceu: <b><span id="ctxSeen">0</span>x</b></div>
+  <div class="row">
+    <div class="card" style="flex:1 1 420px;">
+      <h2>1) Histórico (entrada)</h2>
+      <textarea id="historyInput" placeholder="Cole o histórico aqui. Ex.: V A E V A ... ou VAEVA..."></textarea>
+      <div class="actions">
+        <button id="btnLoadSample" class="secondary">Carregar exemplo</button>
+        <button id="btnBuildGrid">Montar grade</button>
+        <button id="btnAnalyze">Analisar padrões</button>
       </div>
-
-      <div class="box">
-        <div class="muted">Previsão</div>
-        <div class="big" id="predText">—</div>
-        <div class="muted" id="probaText">A: — | V: — | E: —</div>
+      <div class="hr"></div>
+      <div class="hint">
+        Parsing:
+        <ul>
+          <li>aceita <span class="mono">V</span>, <span class="mono">A</span>, <span class="mono">E</span> (ignora outros caracteres)</li>
+          <li>limita a 130 entradas</li>
+          <li>preenche colunas (6 linhas) de cima para baixo</li>
+        </ul>
       </div>
     </div>
 
-    <div class="sep"></div>
-
-    <div class="row">
-      <label class="muted">N (tamanho do padrão):</label>
-      <input type="number" id="nInput" min="1" max="30" value="5" />
-      <button class="smallbtn ok" id="applyN">Aplicar N</button>
-      <span class="muted">Dica: com poucos dados, N=3–5 costuma ser melhor.</span>
-    </div>
-
-    <div class="row" style="margin-top:10px;">
-      <button class="smallbtn" id="undoBtn">Desfazer último</button>
-      <button class="smallbtn" id="exportBtn">Exportar CSV</button>
-      <button class="smallbtn danger" id="resetBtn">Reset (zera tudo)</button>
+    <div class="card" style="flex:1 1 520px;">
+      <h2>2) Grade (visual)</h2>
+      <div class="gridWrap">
+        <div id="grid" class="grid" aria-label="Grade 6×N"></div>
+      </div>
+      <div class="hint" style="margin-top:10px;">
+        Células vazias aparecem esmaecidas.
+      </div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Histórico</h2>
-    <div class="muted">Sequência registrada (A/V/E):</div>
-    <textarea id="historyBox" readonly></textarea>
-    <div class="muted" id="countText">Total: 0</div>
-  </div>
+  <div class="row" style="margin-top:16px;">
+    <div class="card" style="flex:1 1 520px;">
+      <h2>3) Padrões (já cadastrados + adicionar novo)</h2>
 
-  <div class="card">
-    <h2>Importar sequência</h2>
-    <div class="muted">
-      Cole uma sequência como: <code>V,V,A,E,V,A</code> ou <code>V V A E V A</code>.
-      Isso treina o modelo de uma vez.
-    </div>
-    <div class="row" style="margin-top:10px;">
-      <textarea id="importBox" placeholder="Cole aqui..."></textarea>
-    </div>
-    <div class="row" style="margin-top:10px;">
-      <button class="smallbtn ok" id="importBtn">Importar e Treinar</button>
-      <button class="smallbtn" id="clearImportBtn">Limpar</button>
-    </div>
-  </div>
+      <div class="split">
+        <div>
+          <div class="hint">
+            Convenção dos padrões:
+            <ul>
+              <li>A âncora é sempre <span class="mono">C0,L1</span> (como você escreveu).</li>
+              <li>O app varre qualquer posição onde o desenho “caiba”.</li>
+              <li><span class="mono">X</span> = igual à âncora; <span class="mono">!X</span> = contrário (somente V/A); <span class="mono">VA</span> = V ou A.</li>
+              <li>Para empate, use <span class="mono">E</span>.</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <label class="small">Selecionar padrão</label>
+          <select id="patternSelect"></select>
+          <div class="actions">
+            <button id="btnRemovePattern" class="danger">Remover selecionado</button>
+          </div>
+        </div>
+      </div>
 
-  <div class="card">
-    <div class="muted">
-      Armazenamento: os dados ficam salvos no seu navegador (local). Se abrir em outro aparelho/navegador, começa vazio.
+      <div class="hr"></div>
+
+      <h2 style="margin-top:0;">Cadastrar novo padrão</h2>
+
+      <div class="hint">
+        Formato (uma condição por linha), exemplo:
+        <div class="mono">
+          C0,L2 = X<br/>
+          C1,L1 = !X<br/>
+          TARGET: C2,L1 = X
+        </div>
+        Valores RHS aceitos: <span class="mono">X</span>, <span class="mono">!X</span>, <span class="mono">V</span>, <span class="mono">A</span>, <span class="mono">E</span>, <span class="mono">VA</span>.
+      </div>
+
+      <div class="split" style="margin-top:10px;">
+        <div>
+          <label class="small">Nome do padrão</label>
+          <input id="newPatternName" placeholder="Ex.: Meu padrão X" />
+        </div>
+        <div>
+          <label class="small">Âncora permitida</label>
+          <select id="newPatternAnchorAllowed">
+            <option value="VA">V ou A</option>
+            <option value="E">E</option>
+            <option value="VAE">V/A/E</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="split" style="margin-top:10px;">
+        <div>
+          <label class="small">Condições (uma por linha)</label>
+          <textarea id="newPatternConds" class="mono" placeholder="C0,L2 = X&#10;C1,L1 = !X"></textarea>
+        </div>
+        <div>
+          <label class="small">Alvo (TARGET)</label>
+          <input id="newPatternTarget" class="mono" placeholder="C2,L1 = X" />
+          <div class="actions">
+            <button id="btnAddPattern">Adicionar padrão</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint" style="margin-top:10px;">
+        Observação: os offsets informados são relativos à âncora <span class="mono">C0,L1</span>.
+      </div>
+    </div>
+
+    <div class="card" style="flex:1 1 520px;">
+      <h2>4) Relatório técnico</h2>
+      <div id="reportSummary" class="hint">Monte a grade e rode a análise para ver o relatório.</div>
+
+      <div class="actions" style="margin-top:10px;">
+        <button id="btnExportJSON" class="secondary" disabled>Exportar JSON</button>
+        <button id="btnExportCSV" class="secondary" disabled>Exportar CSV</button>
+      </div>
+
+      <div class="hr"></div>
+
+      <h2 style="margin-top:0;">Ocorrências</h2>
+      <div style="overflow:auto; border:1px solid #223049; border-radius:12px;">
+        <table id="occTable">
+          <thead>
+            <tr>
+              <th>Padrão</th>
+              <th>Âncora</th>
+              <th>X</th>
+              <th>Previsto</th>
+              <th>Real</th>
+              <th>Resultado</th>
+              <th>Target</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td colspan="7" class="muted">Sem dados.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-(() => {
-  const CORES = ["A","V","E"];
-  let alpha = 1.0; // suavização Laplace
-  let N = 5;
+/* =========================
+   Constantes / Grid
+   ========================= */
+const MAX_ITEMS = 130;
+const ROWS = 6;
 
-  // Modelo: counts[contextKey] = {A:count, V:count, E:count}
-  let counts = {};
-  let seq = [];
+/* =========================
+   Parsing histórico (V/A/E)
+   ========================= */
+function parseHistory(raw) {
+  const chars = (raw || "").toUpperCase().match(/[VAE]/g) || [];
+  return chars.slice(0, MAX_ITEMS);
+}
 
-  // Para desfazer com segurança, reconstruímos o modelo a partir do histórico quando preciso.
-  function rebuildModel() {
-    counts = {};
-    for (let i = 0; i + N < seq.length; i++) {
-      const ctx = seq.slice(i, i + N);
-      const nxt = seq[i + N];
-      updateCounts(ctx, nxt);
+function sequenceToGrid(seq, rows = ROWS) {
+  const cols = Math.ceil(seq.length / rows) || 1;
+  const grid = Array.from({ length: rows }, () => Array(cols).fill(null));
+  let idx = 0;
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      if (idx >= seq.length) break;
+      grid[r][c] = seq[idx++];
+    }
+  }
+  return grid;
+}
+
+function inBounds(grid, r, c) {
+  return r >= 0 && r < grid.length && c >= 0 && c < grid[0].length;
+}
+
+function cellValue(grid, r, c) {
+  if (!inBounds(grid, r, c)) return null;
+  const v = grid[r][c];
+  return (v === "V" || v === "A" || v === "E") ? v : null;
+}
+
+// contrário só existe entre V e A
+function oppositeVA(color) {
+  if (color === "V") return "A";
+  if (color === "A") return "V";
+  return null;
+}
+
+/* =========================
+   Engine de padrões
+   =========================
+   IMPORTANTE:
+   - Âncora do padrão é SEMPRE o que o usuário chama de C0,L1.
+   - Para implementar isso, internamente usamos anchorOffset = (dc=0, dr=1).
+   - Ou seja: quando varremos uma âncora interna (r,c), ela representa o C0,L1 do usuário.
+   - Então um offset do usuário (dc, drUser) vira (dc, drUser-1) internamente.
+*/
+
+const USER_ANCHOR_DR = 1; // C0,L1
+function userToInternalOffset(drUser) {
+  return drUser - USER_ANCHOR_DR;
+}
+
+// Kind aceitos: "X" | "!X" | "V" | "A" | "E" | "VA"
+function expectedSetFromKind(kind, anchorX) {
+  if (kind === "X") return [anchorX];
+  if (kind === "!X") {
+    const o = oppositeVA(anchorX);
+    return o ? [o] : null; // se âncora é E, não existe contrário
+  }
+  if (kind === "VA") return ["V","A"];
+  if (kind === "V" || kind === "A" || kind === "E") return [kind];
+  return null;
+}
+
+function anchorAllowedSet(code) {
+  if (code === "VA") return ["V","A"];
+  if (code === "E") return ["E"];
+  if (code === "VAE") return ["V","A","E"];
+  return ["V","A"];
+}
+
+function evaluatePatternAtUserAnchor(grid, pattern, anchorR, anchorC) {
+  const X = cellValue(grid, anchorR, anchorC);
+  if (!X) return null;
+
+  // filtro de âncora (V/A ou E etc.)
+  const allowed = anchorAllowedSet(pattern.anchorAllowed || "VA");
+  if (!allowed.includes(X)) return null;
+
+  // checar condições
+  for (const cond of pattern.conditions) {
+    const rr = anchorR + cond.dr; // já em offset interno
+    const cc = anchorC + cond.dc;
+
+    const expectedSet = expectedSetFromKind(cond.kind, X);
+    if (!expectedSet) return null;
+
+    const actual = cellValue(grid, rr, cc);
+    if (!actual) return null;
+    if (!expectedSet.includes(actual)) return null;
+  }
+
+  // medir alvo (TARGET)
+  const tr = anchorR + pattern.target.dr;
+  const tc = anchorC + pattern.target.dc;
+
+  const predictedSet = expectedSetFromKind(pattern.target.kind, X);
+  if (!predictedSet) return null;
+
+  const actual = cellValue(grid, tr, tc);
+
+  const measured = !!actual;
+  const predicted = predictedSet.length === 1 ? predictedSet[0] : predictedSet.join("|");
+  const hit = measured ? predictedSet.includes(actual) : null;
+
+  return {
+    patternName: pattern.name,
+    anchor: { r: anchorR, c: anchorC },
+    X,
+    predicted,
+    actual,
+    hit,
+    target: {...pattern.target}
+  };
+}
+
+function scanPattern(grid, pattern) {
+  const rows = grid.length;
+  const cols = grid[0].length;
+
+  const occurrences = [];
+  let triggers = 0;
+  let measured = 0;
+  let hits = 0;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const res = evaluatePatternAtUserAnchor(grid, pattern, r, c);
+      if (!res) continue;
+
+      triggers++;
+      if (res.hit === true) { measured++; hits++; }
+      else if (res.hit === false) { measured++; }
+
+      occurrences.push(res);
     }
   }
 
-  function ctxKey(ctxArr) { return ctxArr.join(","); }
+  const accuracy = measured > 0 ? hits / measured : null;
+  return { patternName: pattern.name, triggers, measured, hits, accuracy, occurrences };
+}
 
-  function updateCounts(ctxArr, nxt) {
-    const key = ctxKey(ctxArr);
-    if (!counts[key]) counts[key] = {A:0, V:0, E:0};
-    counts[key][nxt] = (counts[key][nxt] || 0) + 1;
+/* =========================
+   Definição dos padrões (seus)
+   =========================
+   Você descreveu em C?,L? onde a âncora é C0,L1.
+   Então cada drUser vira drInternal = drUser-1.
+*/
+
+function mkCond(dc, drUser, kind) {
+  return { dc, dr: userToInternalOffset(drUser), kind };
+}
+
+function mkTarget(dc, drUser, kind) {
+  return { dc, dr: userToInternalOffset(drUser), kind };
+}
+
+function defaultPatterns() {
+  const patterns = [];
+
+  // Padrão 2x1 (o anterior que já estava)
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Padrão 2x1 (âncora C0,L1; TARGET C2,L2 = X)",
+    anchorAllowed: "VA",
+    conditions: [
+      mkCond(0, 2, "X"),   // C0,L2 = X
+      mkCond(1, 1, "!X"),  // C1,L1 = !X
+      mkCond(2, 1, "X"),   // C2,L1 = X
+    ],
+    target: mkTarget(2, 2, "X") // C2,L2 = X
+  });
+
+  // Padrão 2 x 2
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Padrão 2x2 (TARGET C2,L1 = X)",
+    anchorAllowed: "VA",
+    conditions: [
+      mkCond(0, 2, "X"),   // C0,L2 = X
+      mkCond(1, 1, "!X"),  // C1,L1 = !X
+      mkCond(1, 2, "!X"),  // C1,L2 = !X
+    ],
+    target: mkTarget(2, 1, "X") // C2,L1 = X
+  });
+
+  // Padrão Escadinha
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Padrão Escadinha (TARGET C2,L1 = X)",
+    anchorAllowed: "VA",
+    conditions: [
+      mkCond(0, 2, "X"),   // C0,L2 = X
+      mkCond(0, 3, "X"),   // C0,L3 = X
+      mkCond(1, 1, "!X"),  // C1,L1 = !X
+      mkCond(1, 2, "!X"),  // C1,L2 = !X
+    ],
+    target: mkTarget(2, 1, "X") // C2,L1 = X
+  });
+
+  // Padrão Escadinha invertido
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Padrão Escadinha invertido (TARGET C2,L3 = X)",
+    anchorAllowed: "VA",
+    conditions: [
+      mkCond(1, 1, "!X"),  // C1,L1 = !X
+      mkCond(1, 2, "!X"),  // C1,L2 = !X
+      mkCond(2, 1, "X"),   // C2,L1 = X
+      mkCond(2, 2, "X"),   // C2,L2 = X
+    ],
+    target: mkTarget(2, 3, "X") // C2,L3 = X
+  });
+
+  // Padrão de alternância
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Padrão de alternância (TARGET C2,L1 = X)",
+    anchorAllowed: "VA",
+    conditions: [
+      mkCond(0, 2, "X"),   // C0,L2 = X
+      mkCond(0, 3, "X"),   // C0,L3 = X
+      mkCond(0, 4, "X"),   // C0,L4 = X
+      mkCond(1, 1, "!X"),  // C1,L1 = !X
+    ],
+    target: mkTarget(2, 1, "X") // C2,L1 = X
+  });
+
+  // Padrão alternância 2
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Padrão alternância 2 (TARGET C5,L1 = !X)",
+    anchorAllowed: "VA",
+    conditions: [
+      mkCond(0, 2, "X"),   // C0,L2 = X
+      mkCond(1, 1, "!X"),  // C1,L1 = !X
+      mkCond(2, 1, "X"),   // C2,L1 = X
+      mkCond(2, 2, "X"),   // C2,L2 = X
+      mkCond(3, 1, "!X"),  // C3,L1 = !X (mesma cor do C1,L1)
+      mkCond(4, 1, "X"),   // C4,L1 = X
+    ],
+    target: mkTarget(5, 1, "!X") // C5,L1 = !X (mesma cor do C3,L1)
+  });
+
+  // Padrão de quebra da segunda linha após surf
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Quebra da segunda linha após surf (TARGET C2,L1 = X)",
+    anchorAllowed: "VA",
+    conditions: [
+      mkCond(0, 2, "X"),   // C0,L2 = X
+      mkCond(0, 3, "X"),   // C0,L3 = X
+      mkCond(0, 4, "X"),   // C0,L4 = X
+      mkCond(1, 1, "!X"),  // C1,L1 = !X
+      mkCond(1, 2, "!X"),  // C1,L2 = !X
+    ],
+    target: mkTarget(2, 1, "X") // C2,L1 = X
+  });
+
+  // Empate consecutivo
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Empate consecutivo (TARGET C0,L2 = E)",
+    anchorAllowed: "E",
+    conditions: [
+      // sem condições extras
+    ],
+    target: mkTarget(0, 2, "E") // C0,L2 = E
+  });
+
+  // Empate horizontal
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Empate horizontal (TARGET C1,L1 = E)",
+    anchorAllowed: "E",
+    conditions: [],
+    target: mkTarget(1, 1, "E") // C1,L1 = E
+  });
+
+  // Empate alternado
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Empate alternado (C0,L2 = VA; TARGET C0,L3 = E)",
+    anchorAllowed: "E",
+    conditions: [
+      mkCond(0, 2, "VA") // C0,L2 = V ou A
+    ],
+    target: mkTarget(0, 3, "E") // C0,L3 = E
+  });
+
+  // Alternado na horizontal
+  patterns.push({
+    id: crypto.randomUUID(),
+    name: "Alternado na horizontal (C1,L1 = VA; TARGET C2,L1 = E)",
+    anchorAllowed: "E",
+    conditions: [
+      mkCond(1, 1, "VA") // C1,L1 = V ou A
+    ],
+    target: mkTarget(2, 1, "E") // C2,L1 = E
+  });
+
+  return patterns;
+}
+
+/* =========================
+   Parser de entrada de padrão
+   =========================
+   Aceita RHS: X | !X | V | A | E | VA
+   e offsets do usuário (C?,L?)
+*/
+function parseOffsetLine(line) {
+  const cleaned = line.replace(/\s+/g, "");
+  const m = cleaned.match(/^C(-?\d+)(?:,)?L(-?\d+)=(\!?X|V|A|E|VA)$/i);
+  if (!m) return null;
+  const dc = Number(m[1]);
+  const drUser = Number(m[2]);
+  const rhs = m[3].toUpperCase();
+  const kind = (rhs === "X") ? "X" : (rhs === "!X") ? "!X" : rhs; // V/A/E/VA
+  return { dc, drUser, kind };
+}
+
+function parseConditionsBlock(block) {
+  const lines = (block || "").split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+  const parsed = [];
+  for (const line of lines) {
+    const o = parseOffsetLine(line);
+    if (!o) return { ok:false, error:`Linha inválida: "${line}"` };
+    parsed.push({ dc: o.dc, dr: userToInternalOffset(o.drUser), kind: o.kind });
   }
+  return { ok:true, conditions: parsed };
+}
 
-  function predictProba(ctxArr) {
-    const key = ctxKey(ctxArr);
-    const c = counts[key] || {A:0, V:0, E:0};
-    const total = (c.A||0) + (c.V||0) + (c.E||0);
-    const denom = total + alpha * CORES.length;
-    const probs = {
-      A: ((c.A||0) + alpha) / denom,
-      V: ((c.V||0) + alpha) / denom,
-      E: ((c.E||0) + alpha) / denom,
-    };
-    return { probs, total };
-  }
+/* =========================
+   UI State
+   ========================= */
+let state = {
+  seq: [],
+  grid: null,
+  patterns: defaultPatterns(),
+  lastAnalysis: null
+};
 
-  function bestColor(probs) {
-    let best = "A";
-    let bestVal = -1;
-    for (const k of CORES) {
-      if (probs[k] > bestVal) { bestVal = probs[k]; best = k; }
+const el = {
+  historyInput: document.getElementById("historyInput"),
+  btnLoadSample: document.getElementById("btnLoadSample"),
+  btnBuildGrid: document.getElementById("btnBuildGrid"),
+  btnAnalyze: document.getElementById("btnAnalyze"),
+  grid: document.getElementById("grid"),
+
+  patternSelect: document.getElementById("patternSelect"),
+  btnRemovePattern: document.getElementById("btnRemovePattern"),
+
+  newPatternName: document.getElementById("newPatternName"),
+  newPatternAnchorAllowed: document.getElementById("newPatternAnchorAllowed"),
+  newPatternConds: document.getElementById("newPatternConds"),
+  newPatternTarget: document.getElementById("newPatternTarget"),
+  btnAddPattern: document.getElementById("btnAddPattern"),
+
+  reportSummary: document.getElementById("reportSummary"),
+  occTableBody: document.querySelector("#occTable tbody"),
+
+  btnExportJSON: document.getElementById("btnExportJSON"),
+  btnExportCSV: document.getElementById("btnExportCSV"),
+};
+
+function renderPatternSelect() {
+  el.patternSelect.innerHTML = "";
+  state.patterns.forEach((p, idx) => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = `${idx+1}. ${p.name}`;
+    el.patternSelect.appendChild(opt);
+  });
+}
+
+function renderGrid(grid) {
+  el.grid.innerHTML = "";
+  if (!grid) return;
+
+  const rows = grid.length;
+  const cols = grid[0].length;
+
+  el.grid.style.gridTemplateRows = `repeat(${ROWS}, 46px)`;
+
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      const v = grid[r][c];
+      const div = document.createElement("div");
+      div.className = `cell ${v === "V" ? "V" : v === "A" ? "A" : v === "E" ? "E" : "empty"}`;
+      div.title = `Linha ${r+1}, Coluna ${c+1}`;
+      div.innerHTML = v ? v : "<small>•</small>";
+      el.grid.appendChild(div);
     }
-    return best;
+  }
+}
+
+function setReportEmpty(msg) {
+  el.reportSummary.textContent = msg;
+  el.occTableBody.innerHTML = `<tr><td colspan="7" class="muted">${msg}</td></tr>`;
+  el.btnExportJSON.disabled = true;
+  el.btnExportCSV.disabled = true;
+}
+
+function renderReport(analysis) {
+  if (!analysis) { setReportEmpty("Sem análise."); return; }
+
+  const totalOcc = analysis.results.reduce((acc, r) => acc + r.occurrences.length, 0);
+  const perPattern = analysis.results.map(r => {
+    const acc = (r.accuracy === null) ? "N/A" : `${(r.accuracy*100).toFixed(2)}%`;
+    return `<div class="hint"><b>${r.patternName}</b>: gatilhos=${r.triggers}, medidos=${r.measured}, hits=${r.hits}, acerto=${acc}</div>`;
+  }).join("");
+
+  el.reportSummary.innerHTML = `
+    <div class="hint">
+      <div><span class="tag">Padrões</span> ${analysis.results.length}</div>
+      <div><span class="tag">Ocorrências</span> ${totalOcc}</div>
+      <div class="hr"></div>
+      ${perPattern}
+    </div>
+  `;
+
+  const flat = analysis.results.flatMap(r => r.occurrences.map(o => ({...o, _pattern: r.patternName})));
+  if (flat.length === 0) {
+    el.occTableBody.innerHTML = `<tr><td colspan="7" class="muted">Nenhuma ocorrência encontrada.</td></tr>`;
+  } else {
+    el.occTableBody.innerHTML = flat.map(o => {
+      const anchor = `L${o.anchor.r+1}, C${o.anchor.c+1}`;
+      const resTag = o.hit === null
+        ? `<span class="tag">Sem alvo</span>`
+        : o.hit ? `<span class="tag ok">HIT</span>` : `<span class="tag no">MISS</span>`;
+      const real = o.actual ?? "—";
+      // mostrar target no formato do usuário (drUser = drInternal + 1)
+      const targetUserC = o.target.dc;
+      const targetUserL = o.target.dr + USER_ANCHOR_DR;
+      const targetTxt = `C${targetUserC},L${targetUserL} = ${o.predicted}`;
+      return `
+        <tr>
+          <td>${o._pattern}</td>
+          <td class="mono">${anchor}</td>
+          <td class="mono">${o.X}</td>
+          <td class="mono">${o.predicted}</td>
+          <td class="mono">${real}</td>
+          <td>${resTag}</td>
+          <td class="mono">${targetTxt}</td>
+        </tr>
+      `;
+    }).join("");
   }
 
-  function label(c) {
-    if (c === "A") return "Azul (A)";
-    if (c === "V") return "Vermelho (V)";
-    return "Empate (E)";
-  }
+  el.btnExportJSON.disabled = false;
+  el.btnExportCSV.disabled = false;
+}
 
-  function formatPct(x) { return (x * 100).toFixed(1) + "%"; }
+function buildGridFromInput() {
+  state.seq = parseHistory(el.historyInput.value);
+  state.grid = sequenceToGrid(state.seq, ROWS);
+  renderGrid(state.grid);
+  state.lastAnalysis = null;
+  setReportEmpty("Grade montada. Rode a análise para gerar o relatório.");
+}
 
-  function save() {
-    const payload = { N, alpha, seq, counts };
-    localStorage.setItem("IA_CORES_V1", JSON.stringify(payload));
-  }
+function analyzeAll() {
+  if (!state.grid) { setReportEmpty("Monte a grade primeiro."); return; }
+  const results = state.patterns.map(p => scanPattern(state.grid, p));
+  state.lastAnalysis = {
+    createdAt: new Date().toISOString(),
+    seqLength: state.seq.length,
+    rows: ROWS,
+    cols: state.grid[0].length,
+    results
+  };
+  renderReport(state.lastAnalysis);
+}
 
-  function load() {
-    const raw = localStorage.getItem("IA_CORES_V1");
-    if (!raw) return;
-    try {
-      const payload = JSON.parse(raw);
-      if (payload && payload.seq && typeof payload.N === "number") {
-        N = payload.N;
-        alpha = typeof payload.alpha === "number" ? payload.alpha : 1.0;
-        seq = Array.isArray(payload.seq) ? payload.seq : [];
-        // counts pode ficar inconsistente se N mudar; então sempre reconstruímos.
-        rebuildModel();
-      }
-    } catch (_) {}
-  }
+/* =========================
+   Export
+   ========================= */
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
-  // UI
-  const btnA = document.getElementById("btnA");
-  const btnV = document.getElementById("btnV");
-  const btnE = document.getElementById("btnE");
-  const statusPill = document.getElementById("statusPill");
-  const ctxText = document.getElementById("ctxText");
-  const ctxSeen = document.getElementById("ctxSeen");
-  const predText = document.getElementById("predText");
-  const probaText = document.getElementById("probaText");
-  const historyBox = document.getElementById("historyBox");
-  const countText = document.getElementById("countText");
-  const nShow = document.getElementById("nShow");
-  const nInput = document.getElementById("nInput");
-  const applyN = document.getElementById("applyN");
-  const undoBtn = document.getElementById("undoBtn");
-  const exportBtn = document.getElementById("exportBtn");
-  const resetBtn = document.getElementById("resetBtn");
-  const importBox = document.getElementById("importBox");
-  const importBtn = document.getElementById("importBtn");
-  const clearImportBtn = document.getElementById("clearImportBtn");
+function exportJSON() {
+  if (!state.lastAnalysis) return;
+  const payload = {
+    meta: { app: "educativo-grade-6xN", createdAt: state.lastAnalysis.createdAt },
+    input: { seqLength: state.lastAnalysis.seqLength, seq: state.seq, rows: state.lastAnalysis.rows, cols: state.lastAnalysis.cols },
+    patterns: state.patterns,
+    analysis: state.lastAnalysis
+  };
+  downloadText("relatorio_padroes.json", JSON.stringify(payload, null, 2));
+}
 
-  function updateUI() {
-    nShow.textContent = String(N);
-    nInput.value = String(N);
+function exportCSV() {
+  if (!state.lastAnalysis) return;
+  const header = ["pattern","anchor_row","anchor_col","X","predicted","actual","hit"].join(",");
+  const rows = [];
 
-    historyBox.value = seq.join(" ");
-    countText.textContent = `Total: ${seq.length}`;
-
-    if (seq.length < N) {
-      statusPill.textContent = `Preciso de mais ${N - seq.length} resultado(s) para começar a prever`;
-      ctxText.textContent = "—";
-      ctxSeen.textContent = "0";
-      predText.textContent = "—";
-      probaText.textContent = "A: — | V: — | E: —";
-      return;
-    }
-
-    const ctx = seq.slice(seq.length - N);
-    ctxText.textContent = ctx.join(" ");
-    const { probs, total } = predictProba(ctx);
-    ctxSeen.textContent = String(total);
-
-    const best = bestColor(probs);
-    predText.textContent = `${label(best)}`;
-    probaText.textContent = `A: ${formatPct(probs.A)} | V: ${formatPct(probs.V)} | E: ${formatPct(probs.E)}`;
-
-    // status curto
-    statusPill.textContent = total === 0
-      ? "Contexto novo (pouca confiança ainda)"
-      : (total < 5 ? "Poucos exemplos desse contexto" : "Contexto já aprendido");
-  }
-
-  function addResult(cor) {
-    if (!CORES.includes(cor)) return;
-    // aprende: se já existe contexto completo, atualiza contagem com o próximo
-    if (seq.length >= N) {
-      const ctx = seq.slice(seq.length - N);
-      updateCounts(ctx, cor);
-    }
-    seq.push(cor);
-    save();
-    updateUI();
-  }
-
-  btnA.addEventListener("click", () => addResult("A"));
-  btnV.addEventListener("click", () => addResult("V"));
-  btnE.addEventListener("click", () => addResult("E"));
-
-  applyN.addEventListener("click", () => {
-    const val = parseInt(nInput.value, 10);
-    if (!Number.isFinite(val) || val < 1 || val > 30) {
-      alert("N precisa estar entre 1 e 30.");
-      return;
-    }
-    N = val;
-    // ao mudar N, precisamos reconstruir o modelo
-    rebuildModel();
-    save();
-    updateUI();
+  state.lastAnalysis.results.forEach(r => {
+    r.occurrences.forEach(o => {
+      rows.push([
+        `"${r.patternName.replaceAll('"','""')}"`,
+        o.anchor.r+1,
+        o.anchor.c+1,
+        o.X,
+        o.predicted,
+        o.actual ?? "",
+        (o.hit === null ? "" : (o.hit ? "1" : "0"))
+      ].join(","));
+    });
   });
 
-  undoBtn.addEventListener("click", () => {
-    if (seq.length === 0) return;
-    seq.pop();
-    rebuildModel();
-    save();
-    updateUI();
-  });
+  downloadText("ocorrencias_padroes.csv", [header, ...rows].join("\n"));
+}
 
-  resetBtn.addEventListener("click", () => {
-    const ok = confirm("Isso vai apagar histórico e aprendizado. Confirmar?");
-    if (!ok) return;
-    seq = [];
-    counts = {};
-    save();
-    updateUI();
-  });
+/* =========================
+   Add / Remove pattern
+   ========================= */
+function addPatternFromUI() {
+  const name = (el.newPatternName.value || "").trim();
+  if (!name) { alert("Informe um nome para o padrão."); return; }
 
-  function download(filename, text) {
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
+  const anchorAllowed = el.newPatternAnchorAllowed.value || "VA";
 
-  exportBtn.addEventListener("click", () => {
-    // CSV: index,cor
-    let csv = "index,cor\n";
-    for (let i = 0; i < seq.length; i++) csv += `${i+1},${seq[i]}\n`;
-    download("sequencia_cores.csv", csv);
-  });
+  const condParse = parseConditionsBlock(el.newPatternConds.value);
+  if (!condParse.ok) { alert(condParse.error); return; }
 
-  function parseSeq(text) {
-    // aceita separadores vírgula/espaco/linha
-    const raw = text.toUpperCase().replace(/[^AVE,\s]/g, " ");
-    const tokens = raw.split(/[\s,]+/).map(t => t.trim()).filter(Boolean);
-    const filtered = tokens.filter(t => CORES.includes(t));
-    return filtered;
-  }
+  const targetLine = (el.newPatternTarget.value || "").trim();
+  const t = parseOffsetLine(targetLine);
+  if (!t) { alert('TARGET inválido. Ex.: "C2,L1 = X" ou "C0,L2 = E"'); return; }
+  const target = { dc: t.dc, dr: userToInternalOffset(t.drUser), kind: t.kind };
 
-  importBtn.addEventListener("click", () => {
-    const s = importBox.value || "";
-    const parsed = parseSeq(s);
-    if (parsed.length === 0) {
-      alert("Não encontrei A/V/E no que você colou.");
-      return;
-    }
-    // adiciona tudo (treina incrementalmente)
-    for (const c of parsed) addResult(c);
-    importBox.value = "";
-  });
+  const p = { id: crypto.randomUUID(), name, anchorAllowed, conditions: condParse.conditions, target };
+  state.patterns.push(p);
+  renderPatternSelect();
+  el.patternSelect.value = p.id;
 
-  clearImportBtn.addEventListener("click", () => {
-    importBox.value = "";
-  });
+  el.newPatternName.value = "";
+  el.newPatternConds.value = "";
+  el.newPatternTarget.value = "";
 
-  // init
-  load();
-  updateUI();
-})();
+  state.lastAnalysis = null;
+  setReportEmpty("Padrão adicionado. Rode a análise para atualizar o relatório.");
+}
+
+function removeSelectedPattern() {
+  const id = el.patternSelect.value;
+  if (!id) return;
+  const idx = state.patterns.findIndex(p => p.id === id);
+  if (idx < 0) return;
+  state.patterns.splice(idx, 1);
+  renderPatternSelect();
+  state.lastAnalysis = null;
+  setReportEmpty("Padrão removido. Rode a análise para atualizar o relatório.");
+}
+
+/* =========================
+   Sample
+   ========================= */
+function loadSample() {
+  // exemplo com V/A/E (misturado para testar)
+  const sample = "V A E V A A V E V V A V A V V E V A A V E A V V A A V E V A V V A A V V A V A E V V A V A A V E V V A V A E A V V E A V A V E A V V";
+  el.historyInput.value = sample;
+}
+
+/* =========================
+   Wire-up
+   ========================= */
+el.btnLoadSample.addEventListener("click", () => loadSample());
+el.btnBuildGrid.addEventListener("click", () => buildGridFromInput());
+el.btnAnalyze.addEventListener("click", () => analyzeAll());
+
+el.btnAddPattern.addEventListener("click", () => addPatternFromUI());
+el.btnRemovePattern.addEventListener("click", () => removeSelectedPattern());
+
+el.btnExportJSON.addEventListener("click", () => exportJSON());
+el.btnExportCSV.addEventListener("click", () => exportCSV());
+
+// init
+renderPatternSelect();
+setReportEmpty("Cole o histórico, monte a grade e rode a análise.");
 </script>
 </body>
 </html>
