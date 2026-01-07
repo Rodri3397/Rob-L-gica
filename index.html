@@ -9,10 +9,7 @@
     body { margin: 16px; background:#0b0f14; color:#e8eef7; }
     h1,h2 { margin: 0 0 10px; }
     .row { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
-    .card {
-      background:#111826; border:1px solid #223049; border-radius:12px;
-      padding:14px; box-shadow: 0 6px 18px rgba(0,0,0,.25);
-    }
+    .card { background:#111826; border:1px solid #223049; border-radius:12px; padding:14px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
     .card h2 { font-size: 16px; color:#cfe0ff; margin-bottom: 10px; }
     textarea, input, select {
       width: 100%; box-sizing: border-box; color:#e8eef7; background:#0b1220;
@@ -21,7 +18,7 @@
     textarea { min-height: 110px; resize: vertical; }
     button {
       background:#1d4ed8; color:white; border:0; border-radius:10px;
-      padding:10px 12px; cursor:pointer; font-weight:700;
+      padding:10px 12px; cursor:pointer; font-weight:800;
     }
     button.secondary { background:#243248; }
     button.danger { background:#b91c1c; }
@@ -29,8 +26,30 @@
     .hint { font-size: 12px; color:#a9b7d0; line-height: 1.35; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
     .hr { height:1px; background:#223049; margin: 10px 0; }
+    .split { display:flex; gap:10px; flex-wrap:wrap; }
+    .split > div { flex: 1 1 240px; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; align-items:center; }
+    .small { font-size: 12px; }
 
-    /* Grid wrapper with headers */
+    .tag {
+      display:inline-block; padding:2px 8px; border-radius:999px;
+      background:#243248; color:#cfe0ff; border:1px solid #334766; font-size:12px;
+    }
+    .ok { background:#0f2f1b; border-color:#1c7c3a; }
+    .no { background:#2f0f0f; border-color:#b91c1c; }
+
+    /* Click input buttons */
+    .pillBtn{
+      border:1px solid #223049; background:#0b1220;
+      padding:10px 12px; border-radius:12px;
+      font-weight:900; min-width: 90px;
+      display:flex; justify-content:center; align-items:center;
+    }
+    .pillBtn.V { background:#5b0b14; border-color:#a11b2f; }
+    .pillBtn.A { background:#083a6b; border-color:#1c64b5; }
+    .pillBtn.E { background:#2a2a2a; border-color:#5b5b5b; }
+
+    /* Grid with headers */
     .gridContainer {
       display:grid;
       grid-template-columns: 52px 1fr;
@@ -97,7 +116,6 @@
       display:flex; align-items:center; justify-content:center;
       font-weight:900; user-select:none;
       background:#0f172a;
-      position:relative;
     }
     .V { background:#5b0b14; border-color:#a11b2f; }
     .A { background:#083a6b; border-color:#1c64b5; }
@@ -106,170 +124,102 @@
     .cell small { font-size: 11px; opacity:.9; }
 
     /* Highlights */
-    .hlAnchor { outline: 3px solid rgba(255,255,255,.85); outline-offset: 0px; }
-    .hlCond   { outline: 3px solid rgba(250,204,21,.90); outline-offset: 0px; }
-    .hlTarget { outline: 3px solid rgba(34,197,94,.90); outline-offset: 0px; }
-    .badgePos{
-      position:absolute; bottom:4px; right:6px;
-      font-size:10px; color:rgba(255,255,255,.75);
-      font-weight:700;
-    }
+    .hlAnchor { outline: 3px solid rgba(255,255,255,.85); }
+    .hlCond   { outline: 3px solid rgba(250,204,21,.90); }
+    .hlTarget { outline: 3px solid rgba(34,197,94,.90); }
+    .hlNext   { box-shadow: 0 0 0 3px rgba(29,78,216,.9) inset; }
 
+    /* Tables */
     table { width:100%; border-collapse: collapse; font-size: 13px; }
     th, td { border-bottom: 1px solid #223049; padding:8px; text-align:left; vertical-align: top; }
-    th { color:#cfe0ff; font-weight:800; }
+    th { color:#cfe0ff; font-weight:900; }
     tr.clickable:hover td { background: rgba(29,78,216,.12); cursor:pointer; }
-    .tag {
-      display:inline-block; padding:2px 8px; border-radius:999px;
-      background:#243248; color:#cfe0ff; border:1px solid #334766; font-size:12px;
-    }
-    .ok { background:#0f2f1b; border-color:#1c7c3a; }
-    .no { background:#2f0f0f; border-color:#b91c1c; }
-    .muted { color:#a9b7d0; }
-
-    .split { display:flex; gap:10px; flex-wrap:wrap; }
-    .split > div { flex: 1 1 240px; }
-    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; align-items:center; }
-    .small { font-size: 12px; }
-
-    .pillBtn{
-      border:1px solid #223049; background:#0b1220;
-      padding:10px 12px; border-radius:12px;
-      font-weight:900; min-width: 90px;
-      display:flex; justify-content:center; align-items:center;
-    }
-    .pillBtn.V { background:#5b0b14; border-color:#a11b2f; }
-    .pillBtn.A { background:#083a6b; border-color:#1c64b5; }
-    .pillBtn.E { background:#2a2a2a; border-color:#5b5b5b; }
   </style>
 </head>
 <body>
   <h1>App Educativo — Padrões no “Caminho de Contas” (6×N) — V/A/E</h1>
   <p class="hint">
-    Entrada: histórico (até 130) preenchendo de cima para baixo em colunas de 6 linhas. Resultados: V (vermelho), A (azul), E (empate).
-    Relatório técnico: ocorrências, hits/misses, e % de V/A/E no TARGET quando o padrão dispara (calculado no histórico).
+    O “próximo resultado” sempre preenche a próxima célula na ordem: coluna 1 de cima para baixo (6 linhas), depois coluna 2, etc.
+    Quando um padrão estiver pronto e o TARGET cair exatamente nessa próxima célula, o app gera um “sinal” com a % histórica do TARGET.
   </p>
 
   <div class="row">
-    <div class="card" style="flex:1 1 480px;">
-      <h2>1) Entrada (clique para preencher) + colar opcional</h2>
+    <div class="card" style="flex:1 1 520px;">
+      <h2>1) Entrada por clique (análise automática)</h2>
 
-      <div class="split">
+      <div class="actions">
+        <button class="pillBtn V" id="btnAddV">V</button>
+        <button class="pillBtn A" id="btnAddA">A</button>
+        <button class="pillBtn E" id="btnAddE">E</button>
+        <button class="secondary" id="btnUndo">Desfazer</button>
+        <button class="danger" id="btnClear">Limpar</button>
+      </div>
+
+      <div class="split" style="margin-top:10px;">
         <div>
-          <div class="hint">Clique para adicionar um resultado ao histórico:</div>
-          <div class="actions">
-            <button class="pillBtn V" id="btnAddV">V</button>
-            <button class="pillBtn A" id="btnAddA">A</button>
-            <button class="pillBtn E" id="btnAddE">E</button>
-            <button class="secondary" id="btnUndo">Desfazer</button>
-            <button class="danger" id="btnClear">Limpar</button>
-          </div>
+          <div class="hint"><span class="tag">Contagem</span> <span id="countLbl" class="mono">0/130</span></div>
           <div class="hint" style="margin-top:6px;">
-            <span class="tag">Contagem</span> <span id="countLbl" class="mono">0/130</span>
+            <span class="tag">Próxima célula</span> <span id="nextCellLbl" class="mono">L1, C1</span>
           </div>
         </div>
-
         <div>
-          <div class="hint">Opcional: colar histórico (V/A/E). O app normaliza automaticamente.</div>
-          <textarea id="historyInput" placeholder="Ex.: V A E V A ... ou VAEVA..."></textarea>
-          <div class="actions">
-            <button class="secondary" id="btnNormalizePaste">Normalizar e aplicar</button>
-            <button class="secondary" id="btnLoadSample">Carregar exemplo</button>
-          </div>
+          <label class="small">Mínimo de ocorrências do padrão (para mostrar sinal)</label>
+          <input id="minOccInput" type="number" min="1" step="1" value="3" />
+          <div class="hint">“Mais de 2 vezes” ⇒ padrão: <b>3</b>.</div>
         </div>
       </div>
 
       <div class="hr"></div>
 
-      <div class="split">
-        <div>
-          <label class="small">Mínimo de ocorrências para “considerar detectado”</label>
-          <input id="minOccInput" type="number" min="1" step="1" value="3" />
-          <div class="hint">“Mais de 2 vezes” ⇒ padrão vem como <b>3</b> por padrão.</div>
-        </div>
-        <div>
-          <label class="small">Mostrar padrões com poucas ocorrências?</label>
-          <select id="showAllSelect">
-            <option value="no" selected>Não (filtrar)</option>
-            <option value="yes">Sim (mostrar todos)</option>
-          </select>
-          <div class="actions">
-            <button id="btnAnalyze">Analisar padrões</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="hint" style="margin-top:10px;">
-        Parsing aceita apenas <span class="mono">V</span>, <span class="mono">A</span>, <span class="mono">E</span> e ignora outros caracteres.
+      <div class="hint">Opcional: colar histórico (V/A/E) e aplicar:</div>
+      <textarea id="historyInput" placeholder="Ex.: V A E V A ... ou VAEVA..."></textarea>
+      <div class="actions">
+        <button class="secondary" id="btnNormalizePaste">Normalizar e aplicar</button>
+        <button class="secondary" id="btnLoadSample">Carregar exemplo</button>
       </div>
     </div>
 
     <div class="card" style="flex:1 1 640px;">
-      <h2>2) Grade (visual) + destaque de padrões</h2>
+      <h2>2) Grade (visual) + sinais para o próximo Target</h2>
 
       <div class="gridContainer">
         <div class="cornerBox">L/C</div>
-
-        <div class="colHeaderWrap">
-          <div id="colHeaders" class="colHeaderRow"></div>
-        </div>
-
-        <div class="rowHeaderWrap">
-          <div class="rowHeads" id="rowHeaders"></div>
-        </div>
-
-        <div class="gridWrap">
-          <div id="grid" class="grid" aria-label="Grade 6×N"></div>
-        </div>
+        <div class="colHeaderWrap"><div id="colHeaders" class="colHeaderRow"></div></div>
+        <div class="rowHeaderWrap"><div class="rowHeads" id="rowHeaders"></div></div>
+        <div class="gridWrap"><div id="grid" class="grid"></div></div>
       </div>
 
-      <div class="hint" style="margin-top:10px;">
-        Clique numa ocorrência na tabela para destacar as células do padrão na grade.
+      <div class="hr"></div>
+
+      <h2 style="margin-top:0;">Sinais para o próximo Target</h2>
+      <div id="signalsBox" class="hint">Sem sinais no momento.</div>
+
+      <div class="actions" style="margin-top:10px;">
+        <button id="btnClearHighlight" class="secondary" disabled>Limpar destaque</button>
       </div>
     </div>
   </div>
 
   <div class="row" style="margin-top:16px;">
     <div class="card" style="flex:1 1 560px;">
-      <h2>3) Padrões (já cadastrados + adicionar novo)</h2>
-
-      <div class="split">
-        <div>
-          <div class="hint">
-            Convenções:
-            <ul>
-              <li>Âncora do usuário é <span class="mono">C0,L1</span>.</li>
-              <li>O app varre qualquer posição onde o desenho caiba.</li>
-              <li><span class="mono">X</span> = igual à âncora; <span class="mono">!X</span> = contrário (somente V/A); <span class="mono">VA</span> = V ou A; <span class="mono">E</span> = empate.</li>
-            </ul>
-          </div>
-        </div>
-        <div>
-          <label class="small">Selecionar padrão</label>
-          <select id="patternSelect"></select>
-          <div class="actions">
-            <button id="btnRemovePattern" class="danger">Remover selecionado</button>
-          </div>
-        </div>
+      <h2>3) Padrões cadastrados</h2>
+      <div class="hint">
+        Padrões detectam em qualquer posição onde caibam. Âncora do usuário é <span class="mono">C0,L1</span>.
+        <span class="mono">X</span>=âncora, <span class="mono">!X</span>=contrário (apenas V/A), <span class="mono">VA</span>=V ou A, <span class="mono">E</span>=empate.
       </div>
 
       <div class="hr"></div>
-
-      <h2 style="margin-top:0;">Cadastrar novo padrão</h2>
-
-      <div class="hint">
-        Formato (uma condição por linha). Exemplo:
-        <div class="mono">
-          C0,L2 = X<br/>
-          C1,L1 = !X<br/>
-          TARGET: C2,L1 = X
-        </div>
-        RHS aceitos: <span class="mono">X</span>, <span class="mono">!X</span>, <span class="mono">V</span>, <span class="mono">A</span>, <span class="mono">E</span>, <span class="mono">VA</span>.
+      <label class="small">Selecionar padrão</label>
+      <select id="patternSelect"></select>
+      <div class="actions">
+        <button id="btnRemovePattern" class="danger">Remover selecionado</button>
       </div>
 
-      <div class="split" style="margin-top:10px;">
+      <div class="hr"></div>
+      <h2 style="margin-top:0;">Adicionar novo padrão (opcional)</h2>
+      <div class="split">
         <div>
-          <label class="small">Nome do padrão</label>
+          <label class="small">Nome</label>
           <input id="newPatternName" placeholder="Ex.: Meu padrão X" />
         </div>
         <div>
@@ -281,34 +231,28 @@
           </select>
         </div>
       </div>
-
       <div class="split" style="margin-top:10px;">
         <div>
           <label class="small">Condições (uma por linha)</label>
           <textarea id="newPatternConds" class="mono" placeholder="C0,L2 = X&#10;C1,L1 = !X"></textarea>
         </div>
         <div>
-          <label class="small">Alvo (TARGET)</label>
+          <label class="small">TARGET</label>
           <input id="newPatternTarget" class="mono" placeholder="C2,L1 = X" />
           <div class="actions">
             <button id="btnAddPattern">Adicionar padrão</button>
           </div>
         </div>
       </div>
-
-      <div class="hint" style="margin-top:10px;">
-        Dica: se o padrão usar <span class="mono">!X</span> e a âncora for <span class="mono">E</span>, ele nunca vai bater.
-      </div>
     </div>
 
     <div class="card" style="flex:1 1 620px;">
-      <h2>4) Relatório técnico</h2>
-      <div id="reportSummary" class="hint">Adicione resultados e rode a análise.</div>
+      <h2>4) Relatório técnico (resumo)</h2>
+      <div id="reportSummary" class="hint">Adicione resultados para atualizar automaticamente.</div>
 
       <div class="actions" style="margin-top:10px;">
         <button id="btnExportJSON" class="secondary" disabled>Exportar JSON</button>
         <button id="btnExportCSV" class="secondary" disabled>Exportar CSV</button>
-        <button id="btnClearHighlight" class="secondary" disabled>Limpar destaque</button>
       </div>
 
       <div class="hr"></div>
@@ -324,12 +268,11 @@
               <th>Previsto</th>
               <th>Real</th>
               <th>Resultado</th>
-              <th>Target</th>
-              <th>% V/A/E no Target (quando dispara)</th>
+              <th>% V/A/E no Target (histórico)</th>
             </tr>
           </thead>
           <tbody>
-            <tr><td colspan="8" class="muted">Sem dados.</td></tr>
+            <tr><td colspan="7" class="muted">Sem dados.</td></tr>
           </tbody>
         </table>
       </div>
@@ -338,20 +281,21 @@
 
 <script>
 /* =========================
-   Constantes / Grid
+   Config
    ========================= */
 const MAX_ITEMS = 130;
 const ROWS = 6;
+const USER_ANCHOR_L = 1; // âncora em C0,L1
 
 /* =========================
    Estado
    ========================= */
 let state = {
-  seq: [],        // sequência linear (V/A/E)
-  grid: null,     // matriz 6×N
-  patterns: [],   // lista de padrões
+  seq: [],
+  grid: null,
+  patterns: [],
   lastAnalysis: null,
-  highlighted: null, // { anchor:{r,c}, condCells:[{r,c}], target:{r,c} }
+  highlighted: null,
 };
 
 /* =========================
@@ -364,18 +308,20 @@ const el = {
   btnUndo: document.getElementById("btnUndo"),
   btnClear: document.getElementById("btnClear"),
   countLbl: document.getElementById("countLbl"),
+  nextCellLbl: document.getElementById("nextCellLbl"),
 
   historyInput: document.getElementById("historyInput"),
   btnNormalizePaste: document.getElementById("btnNormalizePaste"),
   btnLoadSample: document.getElementById("btnLoadSample"),
 
   minOccInput: document.getElementById("minOccInput"),
-  showAllSelect: document.getElementById("showAllSelect"),
-  btnAnalyze: document.getElementById("btnAnalyze"),
 
   colHeaders: document.getElementById("colHeaders"),
   rowHeaders: document.getElementById("rowHeaders"),
   grid: document.getElementById("grid"),
+
+  signalsBox: document.getElementById("signalsBox"),
+  btnClearHighlight: document.getElementById("btnClearHighlight"),
 
   patternSelect: document.getElementById("patternSelect"),
   btnRemovePattern: document.getElementById("btnRemovePattern"),
@@ -391,7 +337,6 @@ const el = {
 
   btnExportJSON: document.getElementById("btnExportJSON"),
   btnExportCSV: document.getElementById("btnExportCSV"),
-  btnClearHighlight: document.getElementById("btnClearHighlight"),
 };
 
 /* =========================
@@ -401,12 +346,12 @@ function parseHistory(raw) {
   const chars = (raw || "").toUpperCase().match(/[VAE]/g) || [];
   return chars.slice(0, MAX_ITEMS);
 }
-function sequenceToGrid(seq, rows = ROWS) {
-  const cols = Math.ceil(seq.length / rows) || 1;
-  const grid = Array.from({ length: rows }, () => Array(cols).fill(null));
+function sequenceToGrid(seq) {
+  const cols = Math.ceil(seq.length / ROWS) || 1;
+  const grid = Array.from({ length: ROWS }, () => Array(cols).fill(null));
   let idx = 0;
   for (let c = 0; c < cols; c++) {
-    for (let r = 0; r < rows; r++) {
+    for (let r = 0; r < ROWS; r++) {
       if (idx >= seq.length) break;
       grid[r][c] = seq[idx++];
     }
@@ -417,6 +362,7 @@ function inBounds(grid, r, c) {
   return r >= 0 && r < grid.length && c >= 0 && c < grid[0].length;
 }
 function cellValue(grid, r, c) {
+  if (!grid) return null;
   if (!inBounds(grid, r, c)) return null;
   const v = grid[r][c];
   return (v === "V" || v === "A" || v === "E") ? v : null;
@@ -424,14 +370,29 @@ function cellValue(grid, r, c) {
 function oppositeVA(color) {
   if (color === "V") return "A";
   if (color === "A") return "V";
-  return null; // E não tem oposto
+  return null;
 }
+function userToInternalDr(drUser) { return drUser - USER_ANCHOR_L; }
+function formatPct(x) {
+  if (x === null || Number.isNaN(x)) return "N/A";
+  return `${(x*100).toFixed(1)}%`;
+}
+function formatDistPct(d) {
+  if (!d || d.V === null) return "N/A";
+  return `V ${formatPct(d.V)} | A ${formatPct(d.A)} | E ${formatPct(d.E)}`;
+}
+function nextCellFromSeqLen(n) {
+  // próximo índice é n
+  const r = n % ROWS;
+  const c = Math.floor(n / ROWS);
+  return { r, c };
+}
+function coordToIndex(r,c) { return c*ROWS + r; }
 
 /* =========================
-   Render (headers + grid)
+   Render headers + grid
    ========================= */
 function renderHeaders(cols) {
-  // row headers L1..L6
   el.rowHeaders.innerHTML = "";
   for (let r = 0; r < ROWS; r++) {
     const d = document.createElement("div");
@@ -439,8 +400,6 @@ function renderHeaders(cols) {
     d.textContent = `L${r+1}`;
     el.rowHeaders.appendChild(d);
   }
-
-  // col headers C1..Cn
   el.colHeaders.innerHTML = "";
   for (let c = 0; c < cols; c++) {
     const d = document.createElement("div");
@@ -454,27 +413,30 @@ function renderGrid(grid) {
   el.grid.innerHTML = "";
   if (!grid) return;
 
-  const rows = grid.length;
   const cols = grid[0].length;
-
   renderHeaders(cols);
 
-  el.grid.style.gridTemplateRows = `repeat(${ROWS}, 46px)`;
+  const next = nextCellFromSeqLen(state.seq.length);
+  el.nextCellLbl.textContent = `L${next.r+1}, C${next.c+1}`;
 
   for (let c = 0; c < cols; c++) {
-    for (let r = 0; r < rows; r++) {
+    for (let r = 0; r < ROWS; r++) {
       const v = grid[r][c];
       const div = document.createElement("div");
       div.className = `cell ${v === "V" ? "V" : v === "A" ? "A" : v === "E" ? "E" : "empty"}`;
       div.dataset.r = String(r);
       div.dataset.c = String(c);
-      div.title = `Linha ${r+1}, Coluna ${c+1}`;
+      div.title = `L${r+1}, C${c+1}`;
       div.innerHTML = v ? v : "<small>•</small>";
       el.grid.appendChild(div);
     }
   }
 
-  // reaplicar highlight se existir
+  // marca a próxima célula (se ela já existir no grid)
+  const nextEl = cellEl(next.r, next.c);
+  if (nextEl) nextEl.classList.add("hlNext");
+
+  // reaplica highlight se existir
   if (state.highlighted) applyHighlight(state.highlighted);
 }
 
@@ -483,8 +445,11 @@ function updateCountLabel() {
 }
 
 /* =========================
-   Highlight logic
+   Highlight
    ========================= */
+function cellEl(r,c) {
+  return el.grid.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
+}
 function clearHighlight() {
   document.querySelectorAll(".hlAnchor,.hlCond,.hlTarget").forEach(n => {
     n.classList.remove("hlAnchor","hlCond","hlTarget");
@@ -492,11 +457,6 @@ function clearHighlight() {
   state.highlighted = null;
   el.btnClearHighlight.disabled = true;
 }
-
-function cellEl(r,c) {
-  return el.grid.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
-}
-
 function applyHighlight(h) {
   clearHighlight();
   state.highlighted = h;
@@ -517,15 +477,8 @@ function applyHighlight(h) {
 /* =========================
    Engine de padrões
    =========================
-   IMPORTANTÍSSIMO:
-   - Você define offsets em C?,L? e a âncora é C0,L1.
-   - Internamente, tratamos a âncora como a célula base onde varremos.
-   - Então: drInternal = drUser - 1.
+   kinds: X | !X | V | A | E | VA
 */
-const USER_ANCHOR_L = 1;
-function userToInternalDr(drUser) { return drUser - USER_ANCHOR_L; }
-
-// kinds aceitos: X | !X | V | A | E | VA
 function expectedSetFromKind(kind, anchorX) {
   if (kind === "X") return [anchorX];
   if (kind === "!X") {
@@ -547,11 +500,9 @@ function evaluateAtAnchor(grid, pattern, anchorR, anchorC) {
   const X = cellValue(grid, anchorR, anchorC);
   if (!X) return null;
 
-  // filtro de âncora
   const allowed = anchorAllowedSet(pattern.anchorAllowed || "VA");
   if (!allowed.includes(X)) return null;
 
-  // checar condições
   const condCells = [];
   for (const cond of pattern.conditions) {
     const rr = anchorR + cond.dr;
@@ -566,7 +517,6 @@ function evaluateAtAnchor(grid, pattern, anchorR, anchorC) {
     condCells.push({ r: rr, c: cc });
   }
 
-  // alvo
   const tr = anchorR + pattern.target.dr;
   const tc = anchorC + pattern.target.dc;
   const predictedSet = expectedSetFromKind(pattern.target.kind, X);
@@ -576,21 +526,17 @@ function evaluateAtAnchor(grid, pattern, anchorR, anchorC) {
   const measured = !!actual;
   const hit = measured ? predictedSet.includes(actual) : null;
 
-  const predictedLabel = predictedSet.length === 1 ? predictedSet[0] : predictedSet.join("|");
-
   return {
     patternId: pattern.id,
     patternName: pattern.name,
     anchor: { r: anchorR, c: anchorC },
     X,
     predictedSet,
-    predictedLabel,
+    predictedLabel: predictedSet.length === 1 ? predictedSet[0] : predictedSet.join("|"),
     actual,
     hit,
     condCells,
-    targetCell: { r: tr, c: tc },
-    // para mostrar target na tabela no formato usuário
-    targetUser: { C: pattern.target.dc, L: pattern.target.dr + USER_ANCHOR_L, kind: pattern.target.kind }
+    targetCell: { r: tr, c: tc }
   };
 }
 
@@ -603,7 +549,7 @@ function scanPattern(grid, pattern) {
   let measured = 0;
   let hits = 0;
 
-  // distribuição real no target quando dispara
+  // distribuição real no target quando dispara (apenas medidos)
   const dist = { V:0, A:0, E:0 };
 
   for (let r = 0; r < rows; r++) {
@@ -622,20 +568,286 @@ function scanPattern(grid, pattern) {
   }
 
   const accuracy = measured > 0 ? hits / measured : null;
-
-  // percentuais V/A/E no target (só quando medido)
   const distTotal = dist.V + dist.A + dist.E;
   const distPct = distTotal > 0 ? {
-    V: (dist.V/distTotal),
-    A: (dist.A/distTotal),
-    E: (dist.E/distTotal),
+    V: dist.V / distTotal,
+    A: dist.A / distTotal,
+    E: dist.E / distTotal
   } : { V:null, A:null, E:null };
 
-  return { patternId: pattern.id, patternName: pattern.name, triggers, measured, hits, accuracy, dist, distPct, occurrences };
+  return { patternId: pattern.id, patternName: pattern.name, triggers, measured, hits, accuracy, distPct, occurrences };
 }
 
 /* =========================
-   Definição dos padrões (os seus)
+   Sinais para o próximo Target
+   =========================
+   Um sinal existe quando:
+   - condições do padrão batem
+   - targetCell == próxima célula (próximo índice)
+   - (opcional) padrão tem >= minOcc ocorrências no histórico (gatilhos)
+   - então mostramos P(target = cor necessária) = distPct[cor] (estimado no histórico atual)
+*/
+function buildSignals(analysis, minOcc) {
+  if (!analysis) return [];
+
+  const next = nextCellFromSeqLen(state.seq.length);
+  const nextIndex = state.seq.length; // próximo resultado preencherá este índice
+
+  // mapa patternId -> distPct e triggers
+  const byId = new Map();
+  for (const r of analysis.results) byId.set(r.patternId, r);
+
+  const signals = [];
+
+  for (const p of state.patterns) {
+    const pr = byId.get(p.id);
+    if (!pr) continue;
+    if (pr.triggers < minOcc) continue;
+
+    // varrer anchors e achar as que target == next
+    const rows = state.grid.length;
+    const cols = state.grid[0].length;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const ev = evaluateAtAnchor(state.grid, p, r, c);
+        if (!ev) continue;
+
+        // target tem que ser exatamente a próxima célula
+        if (ev.targetCell.r !== next.r || ev.targetCell.c !== next.c) continue;
+
+        // target ainda não existe (por definição do next) — mas garantimos:
+        const idxTarget = coordToIndex(ev.targetCell.r, ev.targetCell.c);
+        if (idxTarget !== nextIndex) continue;
+
+        // probabilidade da(s) cor(es) necessárias:
+        // se predictedSet = [V], prob = distPct.V
+        // se predictedSet = [V,A], prob = distPct.V + distPct.A
+        const d = pr.distPct;
+        let prob = null;
+        if (d.V !== null) {
+          prob = ev.predictedSet.reduce((acc, color) => acc + (d[color] ?? 0), 0);
+        }
+
+        signals.push({
+          patternName: p.name,
+          anchor: ev.anchor,
+          X: ev.X,
+          predictedLabel: ev.predictedLabel,
+          prob,
+          distPct: d,
+          highlight: { anchor: ev.anchor, condCells: ev.condCells, target: ev.targetCell }
+        });
+      }
+    }
+  }
+
+  // ordenar por maior prob (se houver)
+  signals.sort((a,b) => {
+    if (a.prob === null && b.prob === null) return 0;
+    if (a.prob === null) return 1;
+    if (b.prob === null) return -1;
+    return b.prob - a.prob;
+  });
+
+  return signals;
+}
+
+function renderSignals(signals) {
+  if (!signals.length) {
+    el.signalsBox.innerHTML = "Sem sinais no momento.";
+    return;
+  }
+
+  const items = signals.slice(0, 12).map((s, idx) => {
+    const anchorTxt = `Âncora L${s.anchor.r+1}, C${s.anchor.c+1}`;
+    const probTxt = (s.prob === null) ? "Probabilidade: N/A (sem histórico medido suficiente)" : `Probabilidade de completar TARGET: <b>${formatPct(s.prob)}</b>`;
+    const distTxt = formatDistPct(s.distPct);
+
+    // payload para highlight
+    const payload = encodeURIComponent(JSON.stringify(s.highlight));
+
+    return `
+      <div style="padding:10px; border:1px solid #223049; border-radius:12px; margin:8px 0; background:#0b1220;">
+        <div><span class="tag">SINAL</span> <b>${s.patternName}</b></div>
+        <div class="hint mono">${anchorTxt} | X=${s.X} | Target precisa: ${s.predictedLabel}</div>
+        <div class="hint">${probTxt}</div>
+        <div class="hint mono">Distribuição histórica no Target (quando disparou): ${distTxt}</div>
+        <div class="actions">
+          <button class="secondary" data-h="${payload}">Destacar na grade</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  el.signalsBox.innerHTML = items;
+
+  // bind buttons
+  el.signalsBox.querySelectorAll("button[data-h]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const raw = btn.getAttribute("data-h");
+      const h = JSON.parse(decodeURIComponent(raw));
+      applyHighlight(h);
+    });
+  });
+}
+
+/* =========================
+   Relatório (resumo + tabela)
+   ========================= */
+function setReport(msg) {
+  el.reportSummary.textContent = msg;
+  el.btnExportJSON.disabled = !state.lastAnalysis;
+  el.btnExportCSV.disabled = !state.lastAnalysis;
+}
+
+function renderReport(analysis) {
+  if (!analysis) {
+    el.occTableBody.innerHTML = `<tr><td colspan="7" class="muted">Sem dados.</td></tr>`;
+    return;
+  }
+
+  // base rate do histórico atual
+  const baseCounts = state.seq.reduce((acc, v) => { acc[v] = (acc[v]||0)+1; return acc; }, {V:0,A:0,E:0});
+  const baseTotal = baseCounts.V + baseCounts.A + baseCounts.E;
+  const basePct = baseTotal ? { V: baseCounts.V/baseTotal, A: baseCounts.A/baseTotal, E: baseCounts.E/baseTotal } : {V:null,A:null,E:null};
+
+  const minOcc = Math.max(1, Number(el.minOccInput.value || 3));
+  const shown = analysis.results.filter(r => r.triggers >= minOcc);
+
+  el.reportSummary.innerHTML = `
+    <div class="hint">
+      <div><span class="tag">Padrões com >= ${minOcc} ocorrências</span> ${shown.length}/${analysis.results.length}</div>
+      <div><span class="tag">Base no histórico</span> V ${formatPct(basePct.V)} | A ${formatPct(basePct.A)} | E ${formatPct(basePct.E)}</div>
+      <div class="hr"></div>
+      ${shown.slice(0,8).map(r => `
+        <div class="hint">
+          <b>${r.patternName}</b><br/>
+          gatilhos=${r.triggers}, medidos=${r.measured}, hits=${r.hits},
+          acerto=${r.accuracy===null ? "N/A" : formatPct(r.accuracy)},
+          target(V/A/E)=${formatDistPct(r.distPct)}
+        </div>
+      `).join("")}
+      ${shown.length > 8 ? `<div class="muted">(+${shown.length-8} padrões no total)</div>` : ``}
+    </div>
+  `;
+
+  // tabela de ocorrências (somente dos padrões exibidos)
+  const flat = shown.flatMap(r => r.occurrences.map(o => ({
+    ...o,
+    _pattern: r.patternName,
+    _distPct: r.distPct
+  })));
+
+  if (!flat.length) {
+    el.occTableBody.innerHTML = `<tr><td colspan="7" class="muted">Sem ocorrências para exibir.</td></tr>`;
+    return;
+  }
+
+  el.occTableBody.innerHTML = flat.slice(0, 200).map(o => {
+    const anchor = `L${o.anchor.r+1}, C${o.anchor.c+1}`;
+    const resTag = o.hit === null
+      ? `<span class="tag">Sem alvo</span>`
+      : o.hit ? `<span class="tag ok">HIT</span>` : `<span class="tag no">MISS</span>`;
+    const real = o.actual ?? "—";
+    const distTxt = formatDistPct(o._distPct);
+
+    const payload = encodeURIComponent(JSON.stringify({
+      anchor: o.anchor,
+      condCells: o.condCells,
+      target: o.targetCell
+    }));
+
+    return `
+      <tr class="clickable" data-h="${payload}">
+        <td>${o._pattern}</td>
+        <td class="mono">${anchor}</td>
+        <td class="mono">${o.X}</td>
+        <td class="mono">${o.predictedLabel}</td>
+        <td class="mono">${real}</td>
+        <td>${resTag}</td>
+        <td class="mono">${distTxt}</td>
+      </tr>
+    `;
+  }).join("");
+
+  document.querySelectorAll("#occTable tbody tr.clickable").forEach(tr => {
+    tr.addEventListener("click", () => {
+      const raw = tr.getAttribute("data-h");
+      if (!raw) return;
+      const h = JSON.parse(decodeURIComponent(raw));
+      applyHighlight(h);
+    });
+  });
+}
+
+/* =========================
+   Análise automática (core)
+   ========================= */
+function analyzeAuto() {
+  if (!state.grid) return;
+
+  const results = state.patterns.map(p => scanPattern(state.grid, p));
+  state.lastAnalysis = {
+    createdAt: new Date().toISOString(),
+    seqLength: state.seq.length,
+    cols: state.grid[0].length,
+    results
+  };
+
+  const minOcc = Math.max(1, Number(el.minOccInput.value || 3));
+
+  // construir sinais para o próximo Target
+  const signals = buildSignals(state.lastAnalysis, minOcc);
+  renderSignals(signals);
+
+  // se existir sinal, destacar o primeiro automaticamente (opcional)
+  // aqui: destaca o melhor por probabilidade se houver
+  if (signals.length) {
+    applyHighlight(signals[0].highlight);
+  }
+
+  renderReport(state.lastAnalysis);
+
+  el.btnExportJSON.disabled = false;
+  el.btnExportCSV.disabled = false;
+}
+
+/* =========================
+   Entrada e reconstrução
+   ========================= */
+function rebuildFromSeq() {
+  state.grid = sequenceToGrid(state.seq);
+  renderGrid(state.grid);
+  updateCountLabel();
+  analyzeAuto();
+}
+
+function addResult(v) {
+  if (state.seq.length >= MAX_ITEMS) return;
+  state.seq.push(v);
+  rebuildFromSeq();
+}
+function undo() {
+  if (!state.seq.length) return;
+  state.seq.pop();
+  rebuildFromSeq();
+}
+function clearAll() {
+  state.seq = [];
+  state.grid = sequenceToGrid(state.seq);
+  renderGrid(state.grid);
+  updateCountLabel();
+  clearHighlight();
+  el.signalsBox.textContent = "Sem sinais no momento.";
+  el.reportSummary.textContent = "Adicione resultados para atualizar automaticamente.";
+  el.occTableBody.innerHTML = `<tr><td colspan="7" class="muted">Sem dados.</td></tr>`;
+  state.lastAnalysis = null;
+  el.btnExportJSON.disabled = true;
+  el.btnExportCSV.disabled = true;
+}
+
+/* =========================
+   Padrões (os seus)
    ========================= */
 function mkCond(dc, drUser, kind){ return { dc, dr: userToInternalDr(drUser), kind }; }
 function mkTarget(dc, drUser, kind){ return { dc, dr: userToInternalDr(drUser), kind }; }
@@ -643,107 +855,62 @@ function mkTarget(dc, drUser, kind){ return { dc, dr: userToInternalDr(drUser), 
 function defaultPatterns() {
   const patterns = [];
 
-  // (1) Padrão 2x1 (que você tinha definido antes)
-  // C0,L2=X; C1,L1=!X; C2,L1=X; TARGET C2,L2=X
   patterns.push({
     id: crypto.randomUUID(),
     name: "Padrão 2x1 (TARGET C2,L2 = X)",
     anchorAllowed: "VA",
-    conditions: [
-      mkCond(0,2,"X"),
-      mkCond(1,1,"!X"),
-      mkCond(2,1,"X"),
-    ],
+    conditions: [ mkCond(0,2,"X"), mkCond(1,1,"!X"), mkCond(2,1,"X") ],
     target: mkTarget(2,2,"X")
   });
 
-  // (2) Padrão 2x2
   patterns.push({
     id: crypto.randomUUID(),
     name: "Padrão 2x2 (TARGET C2,L1 = X)",
     anchorAllowed: "VA",
-    conditions: [
-      mkCond(0,2,"X"),
-      mkCond(1,1,"!X"),
-      mkCond(1,2,"!X"),
-    ],
+    conditions: [ mkCond(0,2,"X"), mkCond(1,1,"!X"), mkCond(1,2,"!X") ],
     target: mkTarget(2,1,"X")
   });
 
-  // (3) Escadinha
   patterns.push({
     id: crypto.randomUUID(),
     name: "Padrão Escadinha (TARGET C2,L1 = X)",
     anchorAllowed: "VA",
-    conditions: [
-      mkCond(0,2,"X"),
-      mkCond(0,3,"X"),
-      mkCond(1,1,"!X"),
-      mkCond(1,2,"!X"),
-    ],
+    conditions: [ mkCond(0,2,"X"), mkCond(0,3,"X"), mkCond(1,1,"!X"), mkCond(1,2,"!X") ],
     target: mkTarget(2,1,"X")
   });
 
-  // (4) Escadinha invertido
   patterns.push({
     id: crypto.randomUUID(),
     name: "Padrão Escadinha invertido (TARGET C2,L3 = X)",
     anchorAllowed: "VA",
-    conditions: [
-      mkCond(1,1,"!X"),
-      mkCond(1,2,"!X"),
-      mkCond(2,1,"X"),
-      mkCond(2,2,"X"),
-    ],
+    conditions: [ mkCond(1,1,"!X"), mkCond(1,2,"!X"), mkCond(2,1,"X"), mkCond(2,2,"X") ],
     target: mkTarget(2,3,"X")
   });
 
-  // (5) Alternância
   patterns.push({
     id: crypto.randomUUID(),
     name: "Padrão de alternância (TARGET C2,L1 = X)",
     anchorAllowed: "VA",
-    conditions: [
-      mkCond(0,2,"X"),
-      mkCond(0,3,"X"),
-      mkCond(0,4,"X"),
-      mkCond(1,1,"!X"),
-    ],
+    conditions: [ mkCond(0,2,"X"), mkCond(0,3,"X"), mkCond(0,4,"X"), mkCond(1,1,"!X") ],
     target: mkTarget(2,1,"X")
   });
 
-  // (6) Alternância 2
   patterns.push({
     id: crypto.randomUUID(),
     name: "Padrão alternância 2 (TARGET C5,L1 = !X)",
     anchorAllowed: "VA",
-    conditions: [
-      mkCond(0,2,"X"),
-      mkCond(1,1,"!X"),
-      mkCond(2,1,"X"),
-      mkCond(2,2,"X"),
-      mkCond(3,1,"!X"),
-      mkCond(4,1,"X"),
-    ],
+    conditions: [ mkCond(0,2,"X"), mkCond(1,1,"!X"), mkCond(2,1,"X"), mkCond(2,2,"X"), mkCond(3,1,"!X"), mkCond(4,1,"X") ],
     target: mkTarget(5,1,"!X")
   });
 
-  // (7) Quebra da segunda linha após surf
   patterns.push({
     id: crypto.randomUUID(),
     name: "Quebra da segunda linha após surf (TARGET C2,L1 = X)",
     anchorAllowed: "VA",
-    conditions: [
-      mkCond(0,2,"X"),
-      mkCond(0,3,"X"),
-      mkCond(0,4,"X"),
-      mkCond(1,1,"!X"),
-      mkCond(1,2,"!X"),
-    ],
+    conditions: [ mkCond(0,2,"X"), mkCond(0,3,"X"), mkCond(0,4,"X"), mkCond(1,1,"!X"), mkCond(1,2,"!X") ],
     target: mkTarget(2,1,"X")
   });
 
-  // (8) Empate consecutivo: C0,L1=E; TARGET C0,L2=E
   patterns.push({
     id: crypto.randomUUID(),
     name: "Empate consecutivo (TARGET C0,L2 = E)",
@@ -752,7 +919,6 @@ function defaultPatterns() {
     target: mkTarget(0,2,"E")
   });
 
-  // (9) Empate horizontal: C0,L1=E; TARGET C1,L1=E
   patterns.push({
     id: crypto.randomUUID(),
     name: "Empate horizontal (TARGET C1,L1 = E)",
@@ -761,7 +927,6 @@ function defaultPatterns() {
     target: mkTarget(1,1,"E")
   });
 
-  // (10) Empate alternado: C0,L1=E; C0,L2=VA; TARGET C0,L3=E
   patterns.push({
     id: crypto.randomUUID(),
     name: "Empate alternado (C0,L2=VA; TARGET C0,L3=E)",
@@ -770,7 +935,6 @@ function defaultPatterns() {
     target: mkTarget(0,3,"E")
   });
 
-  // (11) Alternado na horizontal: C0,L1=E; C1,L1=VA; TARGET C2,L1=E
   patterns.push({
     id: crypto.randomUUID(),
     name: "Alternado na horizontal (C1,L1=VA; TARGET C2,L1=E)",
@@ -783,7 +947,7 @@ function defaultPatterns() {
 }
 
 /* =========================
-   Padrões: adicionar / remover / select
+   Add/remove patterns
    ========================= */
 function renderPatternSelect() {
   el.patternSelect.innerHTML = "";
@@ -794,6 +958,7 @@ function renderPatternSelect() {
     el.patternSelect.appendChild(opt);
   });
 }
+
 function removeSelectedPattern() {
   const id = el.patternSelect.value;
   if (!id) return;
@@ -801,12 +966,12 @@ function removeSelectedPattern() {
   if (idx < 0) return;
   state.patterns.splice(idx, 1);
   renderPatternSelect();
-  setReportEmpty("Padrão removido. Rode a análise.");
+  rebuildFromSeq();
 }
 
-/* Parser de linha de condição no formato: C2,L3 = X / !X / V / A / E / VA */
+/* Parser para novo padrão */
 function parseOffsetLine(line) {
-  const cleaned = line.replace(/\s+/g, "");
+  const cleaned = (line || "").replace(/\s+/g, "");
   const m = cleaned.match(/^C(-?\d+)(?:,)?L(-?\d+)=(\!?X|V|A|E|VA)$/i);
   if (!m) return null;
   const dc = Number(m[1]);
@@ -827,171 +992,20 @@ function parseConditionsBlock(block) {
 }
 function addPatternFromUI() {
   const name = (el.newPatternName.value || "").trim();
-  if (!name) { alert("Informe um nome para o padrão."); return; }
-
+  if (!name) { alert("Informe um nome."); return; }
   const anchorAllowed = el.newPatternAnchorAllowed.value || "VA";
-
   const condParse = parseConditionsBlock(el.newPatternConds.value);
   if (!condParse.ok) { alert(condParse.error); return; }
-
-  const tline = (el.newPatternTarget.value || "").trim();
-  const t = parseOffsetLine(tline);
-  if (!t) { alert('TARGET inválido. Ex.: "C2,L1 = X" ou "C0,L2 = E"'); return; }
+  const t = parseOffsetLine(el.newPatternTarget.value);
+  if (!t) { alert('TARGET inválido. Ex.: "C2,L1 = X"'); return; }
   const target = { dc: t.dc, dr: userToInternalDr(t.drUser), kind: t.kind };
 
-  // validações básicas
-  if (anchorAllowed === "E") {
-    const usesNotX = condParse.conditions.some(c => c.kind === "!X") || (target.kind === "!X");
-    if (usesNotX) {
-      alert("Aviso: padrão usa !X com âncora E — isso não tem 'contrário' e o padrão não vai bater.");
-      // ainda assim adiciona, mas alerta
-    }
-  }
-
-  state.patterns.push({
-    id: crypto.randomUUID(),
-    name,
-    anchorAllowed,
-    conditions: condParse.conditions,
-    target
-  });
-
+  state.patterns.push({ id: crypto.randomUUID(), name, anchorAllowed, conditions: condParse.conditions, target });
   renderPatternSelect();
   el.newPatternName.value = "";
   el.newPatternConds.value = "";
   el.newPatternTarget.value = "";
-  setReportEmpty("Padrão adicionado. Rode a análise.");
-}
-
-/* =========================
-   Análise / Relatório
-   ========================= */
-function setReportEmpty(msg) {
-  el.reportSummary.textContent = msg;
-  el.occTableBody.innerHTML = `<tr><td colspan="8" class="muted">${msg}</td></tr>`;
-  el.btnExportJSON.disabled = true;
-  el.btnExportCSV.disabled = true;
-  clearHighlight();
-}
-
-function formatPct(x) {
-  if (x === null || Number.isNaN(x)) return "N/A";
-  return `${(x*100).toFixed(1)}%`;
-}
-function formatDistPct(d) {
-  if (d.V === null) return "N/A";
-  return `V ${formatPct(d.V)} | A ${formatPct(d.A)} | E ${formatPct(d.E)}`;
-}
-
-function analyzeAll() {
-  if (!state.grid) { setReportEmpty("Monte a grade primeiro."); return; }
-
-  const minOcc = Math.max(1, Number(el.minOccInput.value || 3));
-  const showAll = el.showAllSelect.value === "yes";
-
-  const results = state.patterns.map(p => scanPattern(state.grid, p));
-
-  // Filtrar padrões “detectados” = triggers >= minOcc
-  const shown = showAll ? results : results.filter(r => r.triggers >= minOcc);
-
-  state.lastAnalysis = {
-    createdAt: new Date().toISOString(),
-    seqLength: state.seq.length,
-    rows: ROWS,
-    cols: state.grid[0].length,
-    minOcc,
-    showAll,
-    results,
-    shown
-  };
-
-  renderReport(state.lastAnalysis);
-}
-
-function renderReport(analysis) {
-  if (!analysis) return;
-
-  const baseCounts = state.seq.reduce((acc, v) => { acc[v] = (acc[v]||0)+1; return acc; }, {V:0,A:0,E:0});
-  const baseTotal = baseCounts.V + baseCounts.A + baseCounts.E;
-  const basePct = baseTotal ? { V: baseCounts.V/baseTotal, A: baseCounts.A/baseTotal, E: baseCounts.E/baseTotal } : {V:null,A:null,E:null};
-
-  const totalOcc = analysis.shown.reduce((acc, r) => acc + r.occurrences.length, 0);
-
-  const perPattern = analysis.shown.map(r => {
-    const acc = (r.accuracy === null) ? "N/A" : `${(r.accuracy*100).toFixed(2)}%`.replace("NaN","N/A");
-    return `
-      <div class="hint">
-        <b>${r.patternName}</b><br/>
-        gatilhos=${r.triggers}, medidos=${r.measured}, hits=${r.hits},
-        acerto=${(r.accuracy===null ? "N/A" : formatPct(r.accuracy))},
-        target(V/A/E)=${formatDistPct(r.distPct)}
-      </div>
-    `;
-  }).join("");
-
-  el.reportSummary.innerHTML = `
-    <div class="hint">
-      <div><span class="tag">Padrões exibidos</span> ${analysis.shown.length} ${analysis.showAll ? "(mostrando todos)" : `(>= ${analysis.minOcc} ocorrências)`}</div>
-      <div><span class="tag">Ocorrências</span> ${totalOcc}</div>
-      <div><span class="tag">Base no histórico</span> V ${formatPct(basePct.V)} | A ${formatPct(basePct.A)} | E ${formatPct(basePct.E)}</div>
-      <div class="hr"></div>
-      ${analysis.shown.length ? perPattern : `<div class="muted">Nenhum padrão atingiu o mínimo de ocorrências.</div>`}
-    </div>
-  `;
-
-  // tabela: uma linha por ocorrência, e inclui a distribuição do padrão (igual para todas as ocorrências do mesmo padrão)
-  const flat = analysis.shown.flatMap(r => r.occurrences.map(o => ({
-    ...o,
-    _pattern: r.patternName,
-    _distPct: r.distPct
-  })));
-
-  if (!flat.length) {
-    el.occTableBody.innerHTML = `<tr><td colspan="8" class="muted">Nenhuma ocorrência para exibir (padrões filtrados).</td></tr>`;
-  } else {
-    el.occTableBody.innerHTML = flat.map((o, idx) => {
-      const anchor = `L${o.anchor.r+1}, C${o.anchor.c+1}`;
-      const resTag = o.hit === null
-        ? `<span class="tag">Sem alvo</span>`
-        : o.hit ? `<span class="tag ok">HIT</span>` : `<span class="tag no">MISS</span>`;
-      const real = o.actual ?? "—";
-      const targetTxt = `C${o.targetUser.C},L${o.targetUser.L} = ${o.predictedLabel}`;
-      const distTxt = formatDistPct(o._distPct);
-
-      // dados para highlight (inline dataset)
-      const payload = encodeURIComponent(JSON.stringify({
-        anchor: o.anchor,
-        condCells: o.condCells,
-        target: o.targetCell
-      }));
-
-      return `
-        <tr class="clickable" data-h="${payload}">
-          <td>${o._pattern}</td>
-          <td class="mono">${anchor}</td>
-          <td class="mono">${o.X}</td>
-          <td class="mono">${o.predictedLabel}</td>
-          <td class="mono">${real}</td>
-          <td>${resTag}</td>
-          <td class="mono">${targetTxt}</td>
-          <td class="mono">${distTxt}</td>
-        </tr>
-      `;
-    }).join("");
-
-    // bind click
-    document.querySelectorAll("#occTable tbody tr.clickable").forEach(tr => {
-      tr.addEventListener("click", () => {
-        const raw = tr.getAttribute("data-h");
-        if (!raw) return;
-        const h = JSON.parse(decodeURIComponent(raw));
-        applyHighlight(h);
-      });
-    });
-  }
-
-  el.btnExportJSON.disabled = false;
-  el.btnExportCSV.disabled = false;
+  rebuildFromSeq();
 }
 
 /* =========================
@@ -1012,7 +1026,7 @@ function exportJSON() {
   if (!state.lastAnalysis) return;
   const payload = {
     meta: { app: "educativo-grade-6xN", createdAt: state.lastAnalysis.createdAt },
-    input: { seqLength: state.lastAnalysis.seqLength, seq: state.seq, rows: state.lastAnalysis.rows, cols: state.lastAnalysis.cols },
+    input: { seq: state.seq, rows: ROWS },
     patterns: state.patterns,
     analysis: state.lastAnalysis
   };
@@ -1020,11 +1034,12 @@ function exportJSON() {
 }
 function exportCSV() {
   if (!state.lastAnalysis) return;
-
   const header = ["pattern","anchor_row","anchor_col","X","predicted","actual","hit","target_V_pct","target_A_pct","target_E_pct"].join(",");
   const rows = [];
+  const minOcc = Math.max(1, Number(el.minOccInput.value || 3));
+  const shown = state.lastAnalysis.results.filter(r => r.triggers >= minOcc);
 
-  state.lastAnalysis.shown.forEach(r => {
+  shown.forEach(r => {
     r.occurrences.forEach(o => {
       rows.push([
         `"${r.patternName.replaceAll('"','""')}"`,
@@ -1045,42 +1060,6 @@ function exportCSV() {
 }
 
 /* =========================
-   Entrada por clique
-   ========================= */
-function rebuildFromSeq() {
-  state.grid = sequenceToGrid(state.seq, ROWS);
-  renderGrid(state.grid);
-  updateCountLabel();
-  // invalidar análise anterior
-  state.lastAnalysis = null;
-  setReportEmpty("Grade atualizada. Rode a análise.");
-}
-
-function addResult(v) {
-  if (state.seq.length >= MAX_ITEMS) return;
-  state.seq.push(v);
-  rebuildFromSeq();
-}
-function undo() {
-  if (!state.seq.length) return;
-  state.seq.pop();
-  rebuildFromSeq();
-}
-function clearAll() {
-  state.seq = [];
-  state.grid = sequenceToGrid(state.seq, ROWS);
-  renderGrid(state.grid);
-  updateCountLabel();
-  setReportEmpty("Limpo. Adicione resultados e rode a análise.");
-}
-
-/* =========================
-   Padrões: init
-   ========================= */
-state.patterns = defaultPatterns();
-renderPatternSelect();
-
-/* =========================
    Eventos
    ========================= */
 el.btnAddV.addEventListener("click", () => addResult("V"));
@@ -1090,8 +1069,7 @@ el.btnUndo.addEventListener("click", () => undo());
 el.btnClear.addEventListener("click", () => clearAll());
 
 el.btnNormalizePaste.addEventListener("click", () => {
-  const seq = parseHistory(el.historyInput.value);
-  state.seq = seq;
+  state.seq = parseHistory(el.historyInput.value);
   rebuildFromSeq();
 });
 el.btnLoadSample.addEventListener("click", () => {
@@ -1101,23 +1079,27 @@ el.btnLoadSample.addEventListener("click", () => {
   rebuildFromSeq();
 });
 
-el.btnAnalyze.addEventListener("click", () => analyzeAll());
+el.minOccInput.addEventListener("input", () => analyzeAuto());
 
-el.btnAddPattern.addEventListener("click", () => addPatternFromUI());
+el.btnClearHighlight.addEventListener("click", () => clearHighlight());
+
 el.btnRemovePattern.addEventListener("click", () => removeSelectedPattern());
+el.btnAddPattern.addEventListener("click", () => addPatternFromUI());
 
 el.btnExportJSON.addEventListener("click", () => exportJSON());
 el.btnExportCSV.addEventListener("click", () => exportCSV());
 
-el.btnClearHighlight.addEventListener("click", () => clearHighlight());
-
 /* =========================
-   Inicialização
+   Init
    ========================= */
-state.grid = sequenceToGrid(state.seq, ROWS);
+state.patterns = defaultPatterns();
+renderPatternSelect();
+state.grid = sequenceToGrid(state.seq);
 renderGrid(state.grid);
 updateCountLabel();
-setReportEmpty("Adicione resultados (clicando) ou cole o histórico, então rode a análise.");
+setReport("Adicione resultados para atualizar automaticamente.");
+el.btnExportJSON.disabled = true;
+el.btnExportCSV.disabled = true;
 </script>
 </body>
 </html>
